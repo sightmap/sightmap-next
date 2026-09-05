@@ -1,0 +1,12 @@
+node_modules/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+npm-debug.log*
+.DS_Store
+.env
+.env.*
+# Local agent tooling
+.agents/
+.claude/

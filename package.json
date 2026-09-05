@@ -1,0 +1,16 @@
+{
+  "name": "sightmap-next-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Workspace root for @sightmap/next and its example app. Not published.",
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
+  "scripts": {
+    "test": "echo \"no packages yet\""
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
