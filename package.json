@@ -8,7 +8,10 @@
     "examples/*"
   ],
   "scripts": {
-    "test": "npm test -w packages/next"
+    "test": "npm test -w packages/next",
+    "build:example": "npm run build -w examples/with-sightmap-webmcp",
+    "start:example": "npm run start -w examples/with-sightmap-webmcp",
+    "test:plans": "npm run test:plans -w examples/with-sightmap-webmcp"
   },
   "engines": {
     "node": ">=20"

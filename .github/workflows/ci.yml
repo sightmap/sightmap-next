@@ -16,4 +16,23 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+      - run: npm run build:example
 
+  plans:
+    # Replays the example's Gherkin plans through agent-browser against native WebMCP.
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx agent-browser install --with-deps || npx agent-browser install
+      - run: npm run build:example
+      - name: Start the example
+        run: |
+          npm run start:example &
+          for i in $(seq 1 30); do curl -sf http://localhost:3000/ >/dev/null && break; sleep 1; done
+      - run: npm run test:plans
