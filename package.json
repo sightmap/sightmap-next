@@ -8,7 +8,7 @@
     "examples/*"
   ],
   "scripts": {
-    "test": "echo \"no packages yet\""
+    "test": "npm test -w packages/next"
   },
   "engines": {
     "node": ">=20"
