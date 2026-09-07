@@ -133,9 +133,21 @@ class AgentBrowser {
     }
     // The daemon may still be shutting down from a previous close; retry briefly.
     let last;
+    let why = "";
     for (let attempt = 0; attempt < 5; attempt++) {
       last = this.exec(args);
-      if (last.status === 0) return;
+      if (last.status === 0) {
+        // A browser still tearing down from a previous close can accept the
+        // open and then vanish, so the next command auto-launches a blank tab.
+        // Trust the open only once the page is actually there. Any real page
+        // counts (an app may redirect); only an absent or blank one retries.
+        const href = this.currentUrl();
+        if (typeof href === "string" && href !== "about:blank" && href !== "")
+          return;
+        why = `page is ${JSON.stringify(href)} after open`;
+      } else {
+        why = last.stderr || last.stdout;
+      }
       Atomics.wait(
         new Int32Array(new SharedArrayBuffer(4)),
         0,
@@ -143,9 +155,21 @@ class AgentBrowser {
         1000 * (attempt + 1),
       );
     }
-    throw new Error(
-      `agent-browser open ${url} failed:\n${last.stderr || last.stdout}`,
-    );
+    throw new Error(`agent-browser open ${url} failed:\n${why}`);
+  }
+  /** Evaluate an expression in the page and parse its JSON; undefined when that fails. */
+  evalJson(expr) {
+    const r = this.exec(["eval", `JSON.stringify(${expr})`]);
+    if (r.status !== 0) return undefined;
+    try {
+      // agent-browser prints the eval result as a JSON string literal.
+      return JSON.parse(JSON.parse((r.stdout || "").trim()));
+    } catch {
+      return undefined;
+    }
+  }
+  currentUrl() {
+    return this.evalJson("location.href");
   }
   waitForTools(timeoutMs = 15000) {
     // The app's <SightkickTools/> (or the init script) registers tools asynchronously.
@@ -156,10 +180,24 @@ class AgentBrowser {
       "--timeout",
       String(timeoutMs),
     ]);
-    if (r.status !== 0)
-      throw new Error(
-        `sightkick runtime never loaded an IR on the page (is <SightkickTools/> in the root layout, or --init-script set?)\n${r.stderr || r.stdout}`,
+    if (r.status !== 0) {
+      // Say what the page looked like, so a timeout in CI is diagnosable.
+      const page = this.evalJson(
+        `({href: location.href, readyState: document.readyState,` +
+          ` sightkick: typeof window.__sightkick,` +
+          ` ir: !!(window.__sightkick && window.__sightkick.ir),` +
+          ` inlinedIr: typeof window.__sightkick_ir,` +
+          ` bootTag: !!document.getElementById("sightkick-boot"),` +
+          ` runtimeTag: !!document.querySelector('script[src*="sightkick-runtime"]')})`,
       );
+      const errors = this.exec(["errors"]);
+      throw new Error(
+        `sightkick runtime never loaded an IR on the page (is <SightkickTools/> in the root layout, or --init-script set?)\n` +
+          `${(r.stderr || r.stdout || "").trim()}\n` +
+          `page: ${JSON.stringify(page)}\n` +
+          `page errors: ${(errors.stdout || errors.stderr || "").trim().slice(0, 2000) || "(none)"}`,
+      );
+    }
   }
   invoke(tool, params) {
     const args = ["webmcp", "invoke", tool, "--json"];
