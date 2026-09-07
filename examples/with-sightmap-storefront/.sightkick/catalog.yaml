@@ -5,7 +5,7 @@ name: storefront
 # Tools never carry selectors — they address the app by component name and
 # extracted property, and `sightkick build` refuses any name the corpus
 # doesn't have. Every tool sets ensure_view, so it registers only on pages
-# whose route matches (see sightkick#9 for why that is also required today).
+# whose route matches and resolves its component names against that view.
 
 tools:
   - name: list_products

@@ -42,26 +42,61 @@ test("unwrapInvoke: agent-browser envelope down to a ToolResult", () => {
   assert.throws(() => unwrapInvoke("not json"), /did not print JSON/);
 });
 
+/** A fake agent-browser: records calls, answers `eval location.href` from a script of pages. */
+function fakeBrowser(pages = []) {
+  const ab = createBrowser(process.cwd());
+  const calls = [];
+  let opened = "";
+  ab.exec = (args) => {
+    calls.push(args.join(" "));
+    if (args[0] === "open" || args[1] === "open") opened = args[args.length - 1];
+    if (args[0] === "eval") {
+      const href = pages.length ? pages.shift() : opened;
+      // agent-browser prints eval results as a JSON string literal.
+      return { status: 0, stdout: JSON.stringify(JSON.stringify(href)), stderr: "" };
+    }
+    return { status: 0, stdout: "", stderr: "" };
+  };
+  return { ab, calls };
+}
+
 test("open --init-script closes a running daemon first, once per script", () => {
   // agent-browser only registers init scripts when it launches the browser,
   // so the first open with one must relaunch; later opens with the same
   // script must not.
-  const ab = createBrowser(process.cwd());
-  const calls = [];
-  ab.exec = (args) => {
-    calls.push(args.join(" "));
-    return { status: 0, stdout: "", stderr: "" };
-  };
+  const { ab, calls } = fakeBrowser();
   ab.open("http://localhost:3000/");
   ab.open("http://localhost:3000/", { initScript: "/app/webmcp.init.js" });
   ab.open("http://localhost:3000/cart", { initScript: "/app/webmcp.init.js" });
   ab.open("http://localhost:3000/", { initScript: "/app/other.init.js" });
+  assert.deepEqual(
+    calls.filter((c) => !c.startsWith("eval ")),
+    [
+      "open http://localhost:3000/",
+      "close",
+      "--init-script /app/webmcp.init.js open http://localhost:3000/",
+      "--init-script /app/webmcp.init.js open http://localhost:3000/cart",
+      "close",
+      "--init-script /app/other.init.js open http://localhost:3000/",
+    ],
+  );
+});
+
+test("open retries when the daemon answered with a blank tab", () => {
+  // A browser mid-shutdown can accept `open` and vanish; the next command then
+  // auto-launches about:blank. The runner must notice and open again.
+  const { ab, calls } = fakeBrowser(["about:blank"]);
+  ab.open("http://localhost:3000/cart");
   assert.deepEqual(calls, [
-    "open http://localhost:3000/",
-    "close",
-    "--init-script /app/webmcp.init.js open http://localhost:3000/",
-    "--init-script /app/webmcp.init.js open http://localhost:3000/cart",
-    "close",
-    "--init-script /app/other.init.js open http://localhost:3000/",
+    "open http://localhost:3000/cart",
+    "eval JSON.stringify(location.href)",
+    "open http://localhost:3000/cart",
+    "eval JSON.stringify(location.href)",
   ]);
+});
+
+test("open accepts a redirect as a real page", () => {
+  const { ab, calls } = fakeBrowser(["http://localhost:3000/home"]);
+  ab.open("http://localhost:3000/");
+  assert.equal(calls.filter((c) => c.startsWith("open ")).length, 1);
 });
