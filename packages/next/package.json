@@ -1,6 +1,6 @@
 {
   "name": "@sightmap/next",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Next.js compatibility layer for Sightmap and Sightkick: seed a .sightmap/ corpus from the App Router, publish the corpus and the compiled WebMCP tool layer at /.well-known/, boot the tools on every page, and replay natural-language plans through agent-browser.",
   "license": "MIT",
   "type": "module",
@@ -10,7 +10,15 @@
     "url": "git+https://github.com/sightmap/sightmap-next.git",
     "directory": "packages/next"
   },
-  "keywords": ["sightmap", "sightkick", "webmcp", "nextjs", "vercel", "agent-browser", "agent"],
+  "keywords": [
+    "sightmap",
+    "sightkick",
+    "webmcp",
+    "nextjs",
+    "vercel",
+    "agent-browser",
+    "agent"
+  ],
   "bin": {
     "sightmap-next": "bin/sightmap-next.mjs"
   },
@@ -23,7 +31,11 @@
     "./build": "./src/build.mjs",
     "./run-plan": "./src/run-plan.mjs"
   },
-  "files": ["bin/", "src/", "README.md"],
+  "files": [
+    "bin/",
+    "src/",
+    "README.md"
+  ],
   "publishConfig": {
     "access": "public"
   },
