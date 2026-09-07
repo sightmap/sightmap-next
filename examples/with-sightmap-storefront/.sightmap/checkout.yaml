@@ -1,0 +1,143 @@
+version: 1
+
+views:
+  - name: Checkout
+    route: /checkout
+    url: http://localhost:3000/checkout
+    source: app/(checkout)/checkout/page.tsx
+    dependencies:
+      - app/layout.tsx
+      - app/(checkout)/layout.tsx
+      - components/CheckoutForm.tsx
+      - lib/store.ts
+    description: Shipping details, shipping method, order summary, place the order.
+    memory:
+      - With an empty cart the page renders CheckoutEmpty instead of the form; add something first
+      - Validation runs on submit only. Errors appear as one FieldError per field (data-field is the input's name) plus a FormErrors summary; the page does not navigate
+      - A valid submit navigates client-side to /orders/:id and empties the cart
+      - Shipping is Standard ($5.00) or Express ($15.00); SummaryTotal includes it, the cart's Total did not
+    components:
+      - name: CheckoutEmpty
+        selector: '[data-component="CheckoutEmpty"]'
+        description: Rendered instead of the form when the cart is empty
+        children:
+          - name: ContinueShoppingLink
+            selector: '[data-component="ContinueShoppingLink"]'
+      - name: CheckoutForm
+        selector: '[data-component="CheckoutForm"]'
+        source: components/CheckoutForm.tsx
+        properties:
+          - name: submitted
+            extract: attr=data-submitted
+          - name: errors
+            extract: attr=data-errors
+        children:
+          - name: ShippingDetails
+            selector: '[data-component="ShippingDetails"]'
+            children:
+              - name: FullNameInput
+                selector: '[data-component="FullNameInput"]'
+              - name: EmailInput
+                selector: '[data-component="EmailInput"]'
+              - name: AddressInput
+                selector: '[data-component="AddressInput"]'
+              - name: CityInput
+                selector: '[data-component="CityInput"]'
+              - name: PostalCodeInput
+                selector: '[data-component="PostalCodeInput"]'
+              - name: FieldError
+                selector: '[data-component="FieldError"]'
+                description: One per invalid field, only after a submit attempt
+                properties:
+                  - name: field
+                    extract: attr=data-field
+                  - name: message
+                    extract: text
+          - name: ShippingMethod
+            selector: '[data-component="ShippingMethod"]'
+            children:
+              - name: ShippingOption
+                selector: '[data-component="ShippingOption"]'
+                description: A label wrapping the radio; click the ShippingRadio inside it
+                properties:
+                  - name: method
+                    extract: attr=data-method
+                  - name: selected
+                    extract: attr=data-selected
+                  - name: label
+                    extract: ShippingLabel.text
+                children:
+                  - name: ShippingRadio
+                    selector: '[data-component="ShippingRadio"]'
+                  - name: ShippingLabel
+                    selector: '[data-component="ShippingLabel"]'
+                    properties:
+                      - name: text
+                        extract: text
+          - name: OrderSummary
+            selector: '[data-component="OrderSummary"]'
+            properties:
+              - name: subtotal
+                extract: SummarySubtotal.text
+              - name: discount
+                extract: SummaryDiscount.text
+              - name: shipping
+                extract: SummaryShipping.text
+              - name: total
+                extract: SummaryTotal.text
+            children:
+              - name: SummaryLine
+                selector: '[data-component="SummaryLine"]'
+                properties:
+                  - name: name
+                    extract: SummaryName.text
+                  - name: quantity
+                    extract: SummaryQuantity.text
+                  - name: total
+                    extract: SummaryLineTotal.text
+                children:
+                  - name: SummaryName
+                    selector: '[data-component="SummaryName"]'
+                    properties:
+                      - name: text
+                        extract: text
+                  - name: SummaryQuantity
+                    selector: '[data-component="SummaryQuantity"]'
+                    properties:
+                      - name: text
+                        extract: text
+                  - name: SummaryLineTotal
+                    selector: '[data-component="SummaryLineTotal"]'
+                    properties:
+                      - name: text
+                        extract: text
+              - name: SummarySubtotal
+                selector: '[data-component="SummarySubtotal"]'
+                properties:
+                  - name: text
+                    extract: text
+              - name: SummaryDiscount
+                selector: '[data-component="SummaryDiscount"]'
+                properties:
+                  - name: text
+                    extract: text
+              - name: SummaryShipping
+                selector: '[data-component="SummaryShipping"]'
+                properties:
+                  - name: text
+                    extract: text
+              - name: SummaryTotal
+                selector: '[data-component="SummaryTotal"]'
+                properties:
+                  - name: text
+                    extract: text
+          - name: FormErrors
+            selector: '[data-component="FormErrors"]'
+            description: Present only after a submit attempt with invalid fields
+            properties:
+              - name: message
+                extract: text
+          - name: PlaceOrderButton
+            selector: '[data-component="PlaceOrderButton"]'
+          - name: BackToCartLink
+            selector: '[data-component="BackToCartLink"]'

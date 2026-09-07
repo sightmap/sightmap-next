@@ -17,6 +17,7 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build:example
+      - run: npm run build:storefront
 
   plans:
     # Replays the example's Gherkin plans through agent-browser against native WebMCP.
@@ -36,3 +37,22 @@ jobs:
           npm run start:example &
           for i in $(seq 1 30); do curl -sf http://localhost:3000/ >/dev/null && break; sleep 1; done
       - run: npm run test:plans
+
+  e2e:
+    # The storefront: the adapter end to end through agent-browser, plans included.
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx agent-browser install --with-deps || npx agent-browser install
+      - run: npm run build:storefront
+      - name: Start the storefront
+        run: |
+          npm run start:storefront &
+          for i in $(seq 1 30); do curl -sf http://localhost:3000/ >/dev/null && break; sleep 1; done
+      - run: npm run test:e2e

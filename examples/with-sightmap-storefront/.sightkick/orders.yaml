@@ -1,0 +1,63 @@
+version: 1
+
+tools:
+  - name: read_order
+    description: Read the confirmed order — number, status, shipping line, and total.
+    ensure_view: OrderConfirmation
+    returns:
+      description: A single row with the order's details.
+      list:
+        rows: OrderConfirmation
+        fields:
+          number: number
+          status: status
+          shipping: shipping
+          total: total
+
+  - name: list_order_items
+    description: List the items on the confirmed order.
+    ensure_view: OrderConfirmation
+    returns:
+      list:
+        rows: OrderItem
+        fields:
+          name: name
+          quantity: quantity
+          total: total
+
+  - name: view_order_history
+    description: Go from the confirmation to the order history. Navigates to /orders.
+    ensure_view: OrderConfirmation
+    steps:
+      - click: { query: 'OrderConfirmation ViewOrdersLink' }
+      - wait_for: { view: Orders }
+
+  - name: continue_shopping_from_order
+    description: Return from the confirmation to the catalog.
+    ensure_view: OrderConfirmation
+    steps:
+      - click: { query: 'OrderConfirmation ContinueShoppingLink' }
+      - wait_for: { view: Catalog }
+
+  - name: list_orders
+    description: List the orders placed in this session — number, item count, total.
+    ensure_view: Orders
+    returns:
+      description: Empty until an order has been placed in this tab.
+      list:
+        rows: OrderRow
+        fields:
+          number: number
+          items: items
+          total: total
+
+  - name: open_order
+    description: Open one order from the history by its number, e.g. "ORD-1001". Navigates to /orders/:id.
+    ensure_view: Orders
+    params:
+      - name: number
+        type: string
+        required: true
+    steps:
+      - click: { query: 'OrderRow[number="{{number}}"] OrderLink' }
+      - wait_for: { view: OrderConfirmation }

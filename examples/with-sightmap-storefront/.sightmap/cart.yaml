@@ -1,0 +1,144 @@
+version: 1
+
+views:
+  - name: Cart
+    route: /cart
+    url: http://localhost:3000/cart
+    source: app/(shop)/cart/page.tsx
+    dependencies:
+      - app/layout.tsx
+      - components/Cart.tsx
+      - lib/store.ts
+      - lib/coupons.ts
+    description: The cart — change quantities, remove lines, apply a coupon, read the totals, proceed to checkout.
+    memory:
+      - A product bought in two sizes is two CartLines; the line's option (e.g. "1 kg") is shown only when the product has one
+      - DecreaseButton is disabled at quantity 1; use RemoveButton to drop a line
+      - Coupons are validated by POST /api/coupons; CouponStatus gets data-checked=<the code you typed> once the answer is in, whether valid or not. SAVE10 is 10% off, WELCOME5 is $5 off, anything else is rejected
+      - Cart Total excludes shipping; shipping is chosen at checkout
+    components:
+      - name: Cart
+        selector: '[data-component="Cart"]'
+        source: components/Cart.tsx
+        properties:
+          - name: count
+            extract: attr=data-count
+        children:
+          - name: EmptyCart
+            selector: '[data-component="EmptyCart"]'
+            description: Rendered instead of the lines when the cart is empty
+          - name: CartLines
+            selector: '[data-component="CartLines"]'
+          - name: CartLine
+            selector: '[data-component="CartLine"]'
+            properties:
+              - name: name
+                extract: LineName.text
+              - name: option
+                extract: LineOption.text
+              - name: quantity
+                extract: attr=data-quantity
+              - name: line_total
+                extract: LineTotal.text
+              - name: slug
+                extract: attr=data-slug
+            children:
+              - name: LineName
+                selector: '[data-component="LineName"]'
+                properties:
+                  - name: text
+                    extract: text
+              - name: LineOption
+                selector: '[data-component="LineOption"]'
+                properties:
+                  - name: text
+                    extract: text
+              - name: DecreaseButton
+                selector: '[data-component="DecreaseButton"]'
+                description: Disabled at quantity 1
+              - name: QuantityValue
+                selector: '[data-component="QuantityValue"]'
+                properties:
+                  - name: text
+                    extract: text
+              - name: IncreaseButton
+                selector: '[data-component="IncreaseButton"]'
+              - name: LineTotal
+                selector: '[data-component="LineTotal"]'
+                properties:
+                  - name: text
+                    extract: text
+              - name: RemoveButton
+                selector: '[data-component="RemoveButton"]'
+          - name: CouponForm
+            selector: '[data-component="CouponForm"]'
+            children:
+              - name: CouponInput
+                selector: '[data-component="CouponInput"]'
+              - name: ApplyCouponButton
+                selector: '[data-component="ApplyCouponButton"]'
+              - name: CouponStatus
+                selector: '[data-component="CouponStatus"]'
+                description: Empty until a code is checked; data-state is none | pending | applied | invalid
+                properties:
+                  - name: message
+                    extract: text
+                  - name: state
+                    extract: attr=data-state
+                  - name: checked
+                    extract: attr=data-checked
+          - name: CartTotals
+            selector: '[data-component="CartTotals"]'
+            properties:
+              - name: subtotal
+                extract: Subtotal.text
+              - name: discount
+                extract: Discount.text
+              - name: total
+                extract: Total.text
+            children:
+              - name: Subtotal
+                selector: '[data-component="Subtotal"]'
+                properties:
+                  - name: text
+                    extract: text
+              - name: Discount
+                selector: '[data-component="Discount"]'
+                properties:
+                  - name: text
+                    extract: text
+              - name: Total
+                selector: '[data-component="Total"]'
+                properties:
+                  - name: text
+                    extract: text
+          - name: CheckoutLink
+            selector: '[data-component="CheckoutLink"]'
+            description: Client-side navigation to /checkout
+          - name: ContinueShoppingLink
+            selector: '[data-component="ContinueShoppingLink"]'
+            description: Back to the catalog; present in both the empty and the filled state
+
+requests:
+  - name: CouponsApi
+    route: /api/coupons
+    method: POST
+    source: app/api/coupons/route.ts
+    description: Validate a coupon code. Always 200 — the outcome is in the body.
+    request:
+      fields:
+        - name: code
+          type: string
+    response:
+      fields:
+        - name: valid
+          type: boolean
+        - name: message
+          type: string
+        - name: coupon
+          type: object
+          description: Present when valid — code, kind (percent | fixed), amount
+    properties:
+      - name: outcome
+        source: rsp.body
+        field: valid

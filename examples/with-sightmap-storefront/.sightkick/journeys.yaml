@@ -1,0 +1,76 @@
+version: 1
+
+# Journeys are compile-time orderings over tools. They never execute; they
+# become `guidance` breadcrumbs on each tool's result so a turn-by-turn agent
+# knows what tends to come next. Which journeys matter comes from how people
+# actually use the shop, not from the corpus.
+
+journeys:
+  - name: find_and_add
+    description: Find a product, pick a size and quantity on its page, add it, check the cart.
+    steps:
+      - search_products
+      - tool: open_product
+        reason: open the product you found
+      - tool: choose_option
+        reason: pick a size if the product has sizes
+      - tool: set_quantity
+        reason: set how many you want
+      - tool: add_to_cart
+        reason: add it in that size and quantity
+      - tool: view_cart_from_product
+        reason: go and check the cart
+      - tool: read_cart
+        reason: confirm the line, its size, and its quantity
+
+  - name: quick_shop
+    description: Add straight from the catalog, then tidy the cart and apply a coupon.
+    steps:
+      - quick_add_to_cart
+      - tool: view_cart
+        reason: go to the cart
+      - tool: read_cart
+        reason: see what is in it
+      - tool: increase_quantity
+        reason: adjust a quantity
+      - tool: apply_coupon
+        reason: apply a discount code
+      - tool: read_totals
+        reason: confirm the discount landed
+
+  - name: checkout
+    description: From the cart to a confirmed order.
+    steps:
+      - proceed_to_checkout
+      - tool: fill_shipping_details
+        reason: enter the shipping details
+      - tool: choose_shipping
+        reason: pick a shipping speed
+      - tool: read_checkout_totals
+        reason: confirm the total before paying
+      - tool: place_order
+        reason: submit the order
+      - tool: read_order
+        reason: record the order number and total
+
+  - name: fix_checkout_errors
+    description: When place_order fails, read the errors, correct the fields, and try again.
+    steps:
+      - place_order
+      - tool: read_form_errors
+        reason: see which fields were rejected
+      - tool: fill_shipping_details
+        reason: correct them
+      - tool: place_order
+        reason: submit again
+
+  - name: review_orders
+    description: From a confirmation to the history and back into an order.
+    steps:
+      - view_order_history
+      - tool: list_orders
+        reason: see every order placed in this session
+      - tool: open_order
+        reason: open one for its details
+      - tool: read_order
+        reason: read its number, shipping, and total

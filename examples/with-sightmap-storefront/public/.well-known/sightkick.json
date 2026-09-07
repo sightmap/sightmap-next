@@ -1,0 +1,2385 @@
+{
+  "version": 1,
+  "name": "storefront",
+  "views": [
+    {
+      "name": "Cart",
+      "route": "/cart"
+    },
+    {
+      "name": "Checkout",
+      "route": "/checkout"
+    },
+    {
+      "name": "Catalog",
+      "route": "/"
+    },
+    {
+      "name": "Orders",
+      "route": "/orders"
+    },
+    {
+      "name": "OrderConfirmation",
+      "route": "/orders/:id"
+    },
+    {
+      "name": "Product",
+      "route": "/products/:slug"
+    }
+  ],
+  "tools": [
+    {
+      "name": "read_cart",
+      "description": "List the cart's lines — name, size (when the product has one), quantity, and line total. Returns `items`: a list of objects with keys {line_total, name, option, quantity}. One row per cart line; empty when the cart is empty.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "ensureView": {
+        "view": "Cart",
+        "route": "/cart"
+      },
+      "steps": [],
+      "returns": {
+        "description": "One row per cart line; empty when the cart is empty.",
+        "kind": "list",
+        "query": {
+          "parts": [
+            {
+              "locators": [
+                "[data-component=\"Cart\"] [data-component=\"CartLine\"]"
+              ]
+            }
+          ]
+        },
+        "fields": {
+          "line_total": {
+            "property": "line_total",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"LineTotal\"]"
+            }
+          },
+          "name": {
+            "property": "name",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"LineName\"]"
+            }
+          },
+          "option": {
+            "property": "option",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"LineOption\"]"
+            }
+          },
+          "quantity": {
+            "property": "quantity",
+            "extractor": {
+              "kind": "attr",
+              "attr": "data-quantity"
+            }
+          }
+        }
+      },
+      "guidance": [
+        {
+          "tool": "increase_quantity",
+          "reason": "adjust a quantity",
+          "when": "now"
+        }
+      ]
+    },
+    {
+      "name": "increase_quantity",
+      "description": "Add one more unit to a cart line, by product name, and return the lines. Returns `items`: a list of objects with keys {line_total, name, quantity}.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "ensureView": {
+        "view": "Cart",
+        "route": "/cart"
+      },
+      "steps": [
+        {
+          "op": "click",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"Cart\"] [data-component=\"CartLine\"]"
+                ],
+                "preds": [
+                  {
+                    "property": "name",
+                    "extractor": {
+                      "kind": "text",
+                      "within": "[data-component=\"LineName\"]"
+                    },
+                    "op": "=",
+                    "value": "{{name}}"
+                  }
+                ]
+              },
+              {
+                "locators": [
+                  "[data-component=\"Cart\"] [data-component=\"CartLine\"] [data-component=\"IncreaseButton\"]"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "returns": {
+        "kind": "list",
+        "query": {
+          "parts": [
+            {
+              "locators": [
+                "[data-component=\"Cart\"] [data-component=\"CartLine\"]"
+              ]
+            }
+          ]
+        },
+        "fields": {
+          "line_total": {
+            "property": "line_total",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"LineTotal\"]"
+            }
+          },
+          "name": {
+            "property": "name",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"LineName\"]"
+            }
+          },
+          "quantity": {
+            "property": "quantity",
+            "extractor": {
+              "kind": "attr",
+              "attr": "data-quantity"
+            }
+          }
+        }
+      },
+      "guidance": [
+        {
+          "tool": "apply_coupon",
+          "reason": "apply a discount code",
+          "when": "now"
+        }
+      ]
+    },
+    {
+      "name": "decrease_quantity",
+      "description": "Remove one unit from a cart line, by product name, and return the lines. Does nothing at quantity 1 (the button is disabled); use remove_from_cart instead. Returns `items`: a list of objects with keys {line_total, name, quantity}.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "ensureView": {
+        "view": "Cart",
+        "route": "/cart"
+      },
+      "steps": [
+        {
+          "op": "click",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"Cart\"] [data-component=\"CartLine\"]"
+                ],
+                "preds": [
+                  {
+                    "property": "name",
+                    "extractor": {
+                      "kind": "text",
+                      "within": "[data-component=\"LineName\"]"
+                    },
+                    "op": "=",
+                    "value": "{{name}}"
+                  }
+                ]
+              },
+              {
+                "locators": [
+                  "[data-component=\"Cart\"] [data-component=\"CartLine\"] [data-component=\"DecreaseButton\"]"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "returns": {
+        "kind": "list",
+        "query": {
+          "parts": [
+            {
+              "locators": [
+                "[data-component=\"Cart\"] [data-component=\"CartLine\"]"
+              ]
+            }
+          ]
+        },
+        "fields": {
+          "line_total": {
+            "property": "line_total",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"LineTotal\"]"
+            }
+          },
+          "name": {
+            "property": "name",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"LineName\"]"
+            }
+          },
+          "quantity": {
+            "property": "quantity",
+            "extractor": {
+              "kind": "attr",
+              "attr": "data-quantity"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "remove_from_cart",
+      "description": "Remove a line from the cart by product name and return the lines left. Returns `items`: a list of objects with keys {name, quantity}.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "ensureView": {
+        "view": "Cart",
+        "route": "/cart"
+      },
+      "steps": [
+        {
+          "op": "click",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"Cart\"] [data-component=\"CartLine\"]"
+                ],
+                "preds": [
+                  {
+                    "property": "name",
+                    "extractor": {
+                      "kind": "text",
+                      "within": "[data-component=\"LineName\"]"
+                    },
+                    "op": "=",
+                    "value": "{{name}}"
+                  }
+                ]
+              },
+              {
+                "locators": [
+                  "[data-component=\"Cart\"] [data-component=\"CartLine\"] [data-component=\"RemoveButton\"]"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "returns": {
+        "kind": "list",
+        "query": {
+          "parts": [
+            {
+              "locators": [
+                "[data-component=\"Cart\"] [data-component=\"CartLine\"]"
+              ]
+            }
+          ]
+        },
+        "fields": {
+          "name": {
+            "property": "name",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"LineName\"]"
+            }
+          },
+          "quantity": {
+            "property": "quantity",
+            "extractor": {
+              "kind": "attr",
+              "attr": "data-quantity"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "apply_coupon",
+      "description": "Enter a coupon code and apply it. The server decides; the returned message says whether it was accepted (SAVE10 and WELCOME5 are) or rejected. Returns `value` (string): The status line, e.g. \"SAVE10 applied: 10% off\".",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ]
+      },
+      "ensureView": {
+        "view": "Cart",
+        "route": "/cart"
+      },
+      "steps": [
+        {
+          "op": "fill",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"Cart\"] [data-component=\"CouponForm\"] [data-component=\"CouponInput\"]"
+                ]
+              }
+            ]
+          },
+          "value": "{{code}}"
+        },
+        {
+          "op": "click",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"Cart\"] [data-component=\"CouponForm\"] [data-component=\"ApplyCouponButton\"]"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "op": "waitFor",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"Cart\"] [data-component=\"CouponForm\"] [data-component=\"CouponStatus\"]"
+                ],
+                "preds": [
+                  {
+                    "property": "checked",
+                    "extractor": {
+                      "kind": "attr",
+                      "attr": "data-checked"
+                    },
+                    "op": "=",
+                    "value": "{{code}}"
+                  }
+                ]
+              }
+            ]
+          },
+          "timeoutMs": 5000
+        }
+      ],
+      "returns": {
+        "description": "The status line, e.g. \"SAVE10 applied: 10% off\".",
+        "kind": "value",
+        "query": {
+          "parts": [
+            {
+              "locators": [
+                "[data-component=\"Cart\"] [data-component=\"CouponForm\"] [data-component=\"CouponStatus\"]"
+              ]
+            }
+          ]
+        },
+        "extractor": {
+          "kind": "text"
+        }
+      },
+      "guidance": [
+        {
+          "tool": "read_totals",
+          "reason": "confirm the discount landed",
+          "when": "now"
+        }
+      ]
+    },
+    {
+      "name": "read_totals",
+      "description": "Read the cart's subtotal, discount, and total (before shipping). Returns `items`: a list of objects with keys {discount, subtotal, total}.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "ensureView": {
+        "view": "Cart",
+        "route": "/cart"
+      },
+      "steps": [],
+      "returns": {
+        "kind": "list",
+        "query": {
+          "parts": [
+            {
+              "locators": [
+                "[data-component=\"Cart\"] [data-component=\"CartTotals\"]"
+              ]
+            }
+          ]
+        },
+        "fields": {
+          "discount": {
+            "property": "discount",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"Discount\"]"
+            }
+          },
+          "subtotal": {
+            "property": "subtotal",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"Subtotal\"]"
+            }
+          },
+          "total": {
+            "property": "total",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"Total\"]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "proceed_to_checkout",
+      "description": "Go from the cart to checkout. Only shown when the cart has lines.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "ensureView": {
+        "view": "Cart",
+        "route": "/cart"
+      },
+      "steps": [
+        {
+          "op": "click",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"Cart\"] [data-component=\"CheckoutLink\"]"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "op": "waitFor",
+          "view": "Checkout",
+          "route": "/checkout",
+          "timeoutMs": 5000
+        }
+      ],
+      "guidance": [
+        {
+          "tool": "fill_shipping_details",
+          "reason": "enter the shipping details",
+          "when": "after_navigation",
+          "view": "Checkout"
+        }
+      ]
+    },
+    {
+      "name": "continue_shopping",
+      "description": "Return from the cart to the catalog.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "ensureView": {
+        "view": "Cart",
+        "route": "/cart"
+      },
+      "steps": [
+        {
+          "op": "click",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"Cart\"] [data-component=\"ContinueShoppingLink\"]"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "op": "waitFor",
+          "view": "Catalog",
+          "route": "/",
+          "timeoutMs": 5000
+        }
+      ]
+    },
+    {
+      "name": "list_products",
+      "description": "List the products currently shown in the catalog, with price, category, stock, and whether each is already in the cart. Returns `items`: a list of objects with keys {category, in_cart, name, price, stock}. One row per visible product card.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "ensureView": {
+        "view": "Catalog",
+        "route": "/"
+      },
+      "steps": [],
+      "returns": {
+        "description": "One row per visible product card.",
+        "kind": "list",
+        "query": {
+          "parts": [
+            {
+              "locators": [
+                "[data-component=\"Catalog\"] [data-component=\"ProductCard\"]"
+              ]
+            }
+          ]
+        },
+        "fields": {
+          "category": {
+            "property": "category",
+            "extractor": {
+              "kind": "attr",
+              "attr": "data-category"
+            }
+          },
+          "in_cart": {
+            "property": "in_cart",
+            "extractor": {
+              "kind": "attr",
+              "attr": "data-in-cart"
+            }
+          },
+          "name": {
+            "property": "name",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"ProductLink\"]"
+            }
+          },
+          "price": {
+            "property": "price",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"ProductPrice\"]"
+            }
+          },
+          "stock": {
+            "property": "stock",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"StockBadge\"]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "search_products",
+      "description": "Type into the catalog search box (matches product name and description) and return the products still shown. Pass an empty string to clear the search. Returns `items`: a list of objects with keys {category, name, price, stock}.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "The search text, e.g. \"Ethiopia\" or \"kettle\"."
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "ensureView": {
+        "view": "Catalog",
+        "route": "/"
+      },
+      "steps": [
+        {
+          "op": "fill",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"Catalog\"] [data-component=\"SearchInput\"]"
+                ]
+              }
+            ]
+          },
+          "value": "{{query}}"
+        },
+        {
+          "op": "waitFor",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"Catalog\"]"
+                ],
+                "preds": [
+                  {
+                    "property": "query",
+                    "extractor": {
+                      "kind": "attr",
+                      "attr": "data-query"
+                    },
+                    "op": "=",
+                    "value": "{{query}}"
+                  }
+                ]
+              }
+            ]
+          },
+          "timeoutMs": 5000
+        }
+      ],
+      "returns": {
+        "kind": "list",
+        "query": {
+          "parts": [
+            {
+              "locators": [
+                "[data-component=\"Catalog\"] [data-component=\"ProductCard\"]"
+              ]
+            }
+          ]
+        },
+        "fields": {
+          "category": {
+            "property": "category",
+            "extractor": {
+              "kind": "attr",
+              "attr": "data-category"
+            }
+          },
+          "name": {
+            "property": "name",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"ProductLink\"]"
+            }
+          },
+          "price": {
+            "property": "price",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"ProductPrice\"]"
+            }
+          },
+          "stock": {
+            "property": "stock",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"StockBadge\"]"
+            }
+          }
+        }
+      },
+      "guidance": [
+        {
+          "tool": "open_product",
+          "reason": "open the product you found",
+          "when": "now"
+        }
+      ]
+    },
+    {
+      "name": "filter_by_category",
+      "description": "Show only one category of product (or All), and return the products now shown. Combines with the current search. Returns `items`: a list of objects with keys {category, name, price}.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "All",
+              "Coffee",
+              "Tea",
+              "Gear"
+            ]
+          }
+        },
+        "required": [
+          "category"
+        ]
+      },
+      "ensureView": {
+        "view": "Catalog",
+        "route": "/"
+      },
+      "steps": [
+        {
+          "op": "click",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"Catalog\"] [data-component=\"CategoryFilter\"] [data-component=\"CategoryButton\"]"
+                ],
+                "preds": [
+                  {
+                    "property": "label",
+                    "extractor": {
+                      "kind": "text"
+                    },
+                    "op": "=",
+                    "value": "{{category}}"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "op": "waitFor",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"Catalog\"] [data-component=\"CategoryFilter\"] [data-component=\"CategoryButton\"]"
+                ],
+                "preds": [
+                  {
+                    "property": "label",
+                    "extractor": {
+                      "kind": "text"
+                    },
+                    "op": "=",
+                    "value": "{{category}}"
+                  },
+                  {
+                    "property": "active",
+                    "extractor": {
+                      "kind": "attr",
+                      "attr": "aria-pressed"
+                    },
+                    "op": "=",
+                    "value": "true"
+                  }
+                ]
+              }
+            ]
+          },
+          "timeoutMs": 5000
+        }
+      ],
+      "returns": {
+        "kind": "list",
+        "query": {
+          "parts": [
+            {
+              "locators": [
+                "[data-component=\"Catalog\"] [data-component=\"ProductCard\"]"
+              ]
+            }
+          ]
+        },
+        "fields": {
+          "category": {
+            "property": "category",
+            "extractor": {
+              "kind": "attr",
+              "attr": "data-category"
+            }
+          },
+          "name": {
+            "property": "name",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"ProductLink\"]"
+            }
+          },
+          "price": {
+            "property": "price",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"ProductPrice\"]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "sort_products",
+      "description": "Sort the catalog and return the products in their new order. Returns `items`: a list of objects with keys {name, price}.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sort": {
+            "type": "string",
+            "enum": [
+              "Featured",
+              "Price: low to high",
+              "Price: high to low",
+              "Name"
+            ]
+          }
+        },
+        "required": [
+          "sort"
+        ]
+      },
+      "ensureView": {
+        "view": "Catalog",
+        "route": "/"
+      },
+      "steps": [
+        {
+          "op": "click",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"Catalog\"] [data-component=\"SortBar\"] [data-component=\"SortButton\"]"
+                ],
+                "preds": [
+                  {
+                    "property": "label",
+                    "extractor": {
+                      "kind": "text"
+                    },
+                    "op": "=",
+                    "value": "{{sort}}"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "op": "waitFor",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"Catalog\"] [data-component=\"SortBar\"] [data-component=\"SortButton\"]"
+                ],
+                "preds": [
+                  {
+                    "property": "label",
+                    "extractor": {
+                      "kind": "text"
+                    },
+                    "op": "=",
+                    "value": "{{sort}}"
+                  },
+                  {
+                    "property": "active",
+                    "extractor": {
+                      "kind": "attr",
+                      "attr": "aria-pressed"
+                    },
+                    "op": "=",
+                    "value": "true"
+                  }
+                ]
+              }
+            ]
+          },
+          "timeoutMs": 5000
+        }
+      ],
+      "returns": {
+        "kind": "list",
+        "query": {
+          "parts": [
+            {
+              "locators": [
+                "[data-component=\"Catalog\"] [data-component=\"ProductCard\"]"
+              ]
+            }
+          ]
+        },
+        "fields": {
+          "name": {
+            "property": "name",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"ProductLink\"]"
+            }
+          },
+          "price": {
+            "property": "price",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"ProductPrice\"]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "open_product",
+      "description": "Open a product's page from the catalog by its exact name. Navigates to /products/:slug.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The product name as shown, e.g. \"Ethiopia Yirgacheffe\"."
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "ensureView": {
+        "view": "Catalog",
+        "route": "/"
+      },
+      "steps": [
+        {
+          "op": "click",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"Catalog\"] [data-component=\"ProductCard\"]"
+                ],
+                "preds": [
+                  {
+                    "property": "name",
+                    "extractor": {
+                      "kind": "text",
+                      "within": "[data-component=\"ProductLink\"]"
+                    },
+                    "op": "=",
+                    "value": "{{name}}"
+                  }
+                ]
+              },
+              {
+                "locators": [
+                  "[data-component=\"Catalog\"] [data-component=\"ProductCard\"] [data-component=\"ProductLink\"]"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "op": "waitFor",
+          "view": "Product",
+          "route": "/products/:slug",
+          "timeoutMs": 5000
+        }
+      ],
+      "guidance": [
+        {
+          "tool": "choose_option",
+          "reason": "pick a size if the product has sizes",
+          "when": "after_navigation",
+          "view": "Product"
+        }
+      ]
+    },
+    {
+      "name": "quick_add_to_cart",
+      "description": "Add one unit of a product to the cart straight from the catalog (its first size, if it has sizes). Idempotent — a product already in the cart is left alone. Fails on a sold-out product, whose button is disabled. Returns `value` (string): The number of units now in the cart, from the nav badge.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "ensureView": {
+        "view": "Catalog",
+        "route": "/"
+      },
+      "guard": {
+        "kind": "present",
+        "query": {
+          "parts": [
+            {
+              "locators": [
+                "[data-component=\"Catalog\"] [data-component=\"ProductCard\"]"
+              ],
+              "preds": [
+                {
+                  "property": "name",
+                  "extractor": {
+                    "kind": "text",
+                    "within": "[data-component=\"ProductLink\"]"
+                  },
+                  "op": "=",
+                  "value": "{{name}}"
+                },
+                {
+                  "property": "in_cart",
+                  "extractor": {
+                    "kind": "attr",
+                    "attr": "data-in-cart"
+                  },
+                  "op": "=",
+                  "value": "true"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "steps": [
+        {
+          "op": "click",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"Catalog\"] [data-component=\"ProductCard\"]"
+                ],
+                "preds": [
+                  {
+                    "property": "name",
+                    "extractor": {
+                      "kind": "text",
+                      "within": "[data-component=\"ProductLink\"]"
+                    },
+                    "op": "=",
+                    "value": "{{name}}"
+                  }
+                ]
+              },
+              {
+                "locators": [
+                  "[data-component=\"Catalog\"] [data-component=\"ProductCard\"] [data-component=\"QuickAddButton\"]"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "op": "waitFor",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"Catalog\"] [data-component=\"ProductCard\"]"
+                ],
+                "preds": [
+                  {
+                    "property": "name",
+                    "extractor": {
+                      "kind": "text",
+                      "within": "[data-component=\"ProductLink\"]"
+                    },
+                    "op": "=",
+                    "value": "{{name}}"
+                  },
+                  {
+                    "property": "in_cart",
+                    "extractor": {
+                      "kind": "attr",
+                      "attr": "data-in-cart"
+                    },
+                    "op": "=",
+                    "value": "true"
+                  }
+                ]
+              }
+            ]
+          },
+          "timeoutMs": 5000
+        }
+      ],
+      "returns": {
+        "description": "The number of units now in the cart, from the nav badge.",
+        "kind": "value",
+        "query": {
+          "parts": [
+            {
+              "locators": [
+                "[data-component=\"SiteNav\"] [data-component=\"CartLink\"]"
+              ]
+            }
+          ]
+        },
+        "extractor": {
+          "kind": "attr",
+          "attr": "data-count"
+        }
+      },
+      "guidance": [
+        {
+          "tool": "view_cart",
+          "reason": "go to the cart",
+          "when": "now"
+        }
+      ]
+    },
+    {
+      "name": "view_cart",
+      "description": "Go to the cart from the catalog via the nav link. Navigates to /cart.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "ensureView": {
+        "view": "Catalog",
+        "route": "/"
+      },
+      "steps": [
+        {
+          "op": "click",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"SiteNav\"] [data-component=\"CartLink\"]"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "op": "waitFor",
+          "view": "Cart",
+          "route": "/cart",
+          "timeoutMs": 5000
+        }
+      ],
+      "guidance": [
+        {
+          "tool": "read_cart",
+          "reason": "see what is in it",
+          "when": "after_navigation",
+          "view": "Cart"
+        }
+      ]
+    },
+    {
+      "name": "fill_shipping_details",
+      "description": "Fill in the five shipping fields. Nothing is validated until place_order.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "full_name": {
+            "type": "string"
+          },
+          "postal_code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "full_name",
+          "email",
+          "address",
+          "city",
+          "postal_code"
+        ]
+      },
+      "ensureView": {
+        "view": "Checkout",
+        "route": "/checkout"
+      },
+      "steps": [
+        {
+          "op": "fill",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"CheckoutForm\"] [data-component=\"ShippingDetails\"] [data-component=\"FullNameInput\"]"
+                ]
+              }
+            ]
+          },
+          "value": "{{full_name}}"
+        },
+        {
+          "op": "fill",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"CheckoutForm\"] [data-component=\"ShippingDetails\"] [data-component=\"EmailInput\"]"
+                ]
+              }
+            ]
+          },
+          "value": "{{email}}"
+        },
+        {
+          "op": "fill",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"CheckoutForm\"] [data-component=\"ShippingDetails\"] [data-component=\"AddressInput\"]"
+                ]
+              }
+            ]
+          },
+          "value": "{{address}}"
+        },
+        {
+          "op": "fill",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"CheckoutForm\"] [data-component=\"ShippingDetails\"] [data-component=\"CityInput\"]"
+                ]
+              }
+            ]
+          },
+          "value": "{{city}}"
+        },
+        {
+          "op": "fill",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"CheckoutForm\"] [data-component=\"ShippingDetails\"] [data-component=\"PostalCodeInput\"]"
+                ]
+              }
+            ]
+          },
+          "value": "{{postal_code}}"
+        }
+      ],
+      "guidance": [
+        {
+          "tool": "choose_shipping",
+          "reason": "pick a shipping speed",
+          "when": "now"
+        },
+        {
+          "tool": "place_order",
+          "reason": "submit again",
+          "when": "now"
+        }
+      ]
+    },
+    {
+      "name": "choose_shipping",
+      "description": "Pick Standard ($5.00, 3–5 days) or Express ($15.00, next day) and return the order total with it. Returns `value` (string): The grand total including shipping.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "Standard",
+              "Express"
+            ]
+          }
+        },
+        "required": [
+          "method"
+        ]
+      },
+      "ensureView": {
+        "view": "Checkout",
+        "route": "/checkout"
+      },
+      "steps": [
+        {
+          "op": "click",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"CheckoutForm\"] [data-component=\"ShippingMethod\"] [data-component=\"ShippingOption\"]"
+                ],
+                "preds": [
+                  {
+                    "property": "method",
+                    "extractor": {
+                      "kind": "attr",
+                      "attr": "data-method"
+                    },
+                    "op": "=",
+                    "value": "{{method}}"
+                  }
+                ]
+              },
+              {
+                "locators": [
+                  "[data-component=\"CheckoutForm\"] [data-component=\"ShippingMethod\"] [data-component=\"ShippingOption\"] [data-component=\"ShippingRadio\"]"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "op": "waitFor",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"CheckoutForm\"] [data-component=\"ShippingMethod\"] [data-component=\"ShippingOption\"]"
+                ],
+                "preds": [
+                  {
+                    "property": "method",
+                    "extractor": {
+                      "kind": "attr",
+                      "attr": "data-method"
+                    },
+                    "op": "=",
+                    "value": "{{method}}"
+                  },
+                  {
+                    "property": "selected",
+                    "extractor": {
+                      "kind": "attr",
+                      "attr": "data-selected"
+                    },
+                    "op": "=",
+                    "value": "true"
+                  }
+                ]
+              }
+            ]
+          },
+          "timeoutMs": 5000
+        }
+      ],
+      "returns": {
+        "description": "The grand total including shipping.",
+        "kind": "value",
+        "query": {
+          "parts": [
+            {
+              "locators": [
+                "[data-component=\"CheckoutForm\"] [data-component=\"OrderSummary\"]"
+              ]
+            }
+          ]
+        },
+        "extractor": {
+          "kind": "text",
+          "within": "[data-component=\"SummaryTotal\"]"
+        }
+      },
+      "guidance": [
+        {
+          "tool": "read_checkout_totals",
+          "reason": "confirm the total before paying",
+          "when": "now"
+        }
+      ]
+    },
+    {
+      "name": "read_order_summary",
+      "description": "List what is about to be ordered — one row per line with name, quantity, and line total. Returns `items`: a list of objects with keys {name, quantity, total}.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "ensureView": {
+        "view": "Checkout",
+        "route": "/checkout"
+      },
+      "steps": [],
+      "returns": {
+        "kind": "list",
+        "query": {
+          "parts": [
+            {
+              "locators": [
+                "[data-component=\"CheckoutForm\"] [data-component=\"OrderSummary\"] [data-component=\"SummaryLine\"]"
+              ]
+            }
+          ]
+        },
+        "fields": {
+          "name": {
+            "property": "name",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"SummaryName\"]"
+            }
+          },
+          "quantity": {
+            "property": "quantity",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"SummaryQuantity\"]"
+            }
+          },
+          "total": {
+            "property": "total",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"SummaryLineTotal\"]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "read_checkout_totals",
+      "description": "Read subtotal, discount, shipping, and the grand total. Returns `items`: a list of objects with keys {discount, shipping, subtotal, total}.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "ensureView": {
+        "view": "Checkout",
+        "route": "/checkout"
+      },
+      "steps": [],
+      "returns": {
+        "kind": "list",
+        "query": {
+          "parts": [
+            {
+              "locators": [
+                "[data-component=\"CheckoutForm\"] [data-component=\"OrderSummary\"]"
+              ]
+            }
+          ]
+        },
+        "fields": {
+          "discount": {
+            "property": "discount",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"SummaryDiscount\"]"
+            }
+          },
+          "shipping": {
+            "property": "shipping",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"SummaryShipping\"]"
+            }
+          },
+          "subtotal": {
+            "property": "subtotal",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"SummarySubtotal\"]"
+            }
+          },
+          "total": {
+            "property": "total",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"SummaryTotal\"]"
+            }
+          }
+        }
+      },
+      "guidance": [
+        {
+          "tool": "place_order",
+          "reason": "submit the order",
+          "when": "now"
+        }
+      ]
+    },
+    {
+      "name": "place_order",
+      "description": "Submit the order. With valid details this navigates to the confirmation page (/orders/:id) and empties the cart. With invalid details the page stays put and this tool fails — call read_form_errors to see why.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "ensureView": {
+        "view": "Checkout",
+        "route": "/checkout"
+      },
+      "steps": [
+        {
+          "op": "click",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"CheckoutForm\"] [data-component=\"PlaceOrderButton\"]"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "op": "waitFor",
+          "view": "OrderConfirmation",
+          "route": "/orders/:id",
+          "timeoutMs": 5000
+        }
+      ],
+      "guidance": [
+        {
+          "tool": "read_order",
+          "reason": "record the order number and total",
+          "when": "after_navigation",
+          "view": "OrderConfirmation"
+        },
+        {
+          "tool": "read_form_errors",
+          "reason": "see which fields were rejected",
+          "when": "now"
+        }
+      ]
+    },
+    {
+      "name": "read_form_errors",
+      "description": "List the validation errors shown after a failed place_order — which field, and the message. Returns `items`: a list of objects with keys {field, message}. Empty when nothing is wrong or nothing was submitted yet.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "ensureView": {
+        "view": "Checkout",
+        "route": "/checkout"
+      },
+      "steps": [],
+      "returns": {
+        "description": "Empty when nothing is wrong or nothing was submitted yet.",
+        "kind": "list",
+        "query": {
+          "parts": [
+            {
+              "locators": [
+                "[data-component=\"CheckoutForm\"] [data-component=\"ShippingDetails\"] [data-component=\"FieldError\"]"
+              ]
+            }
+          ]
+        },
+        "fields": {
+          "field": {
+            "property": "field",
+            "extractor": {
+              "kind": "attr",
+              "attr": "data-field"
+            }
+          },
+          "message": {
+            "property": "message",
+            "extractor": {
+              "kind": "text"
+            }
+          }
+        }
+      },
+      "guidance": [
+        {
+          "tool": "fill_shipping_details",
+          "reason": "correct them",
+          "when": "now"
+        }
+      ]
+    },
+    {
+      "name": "back_to_cart",
+      "description": "Return from checkout to the cart.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "ensureView": {
+        "view": "Checkout",
+        "route": "/checkout"
+      },
+      "steps": [
+        {
+          "op": "click",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"CheckoutForm\"] [data-component=\"BackToCartLink\"]"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "op": "waitFor",
+          "view": "Cart",
+          "route": "/cart",
+          "timeoutMs": 5000
+        }
+      ]
+    },
+    {
+      "name": "read_order",
+      "description": "Read the confirmed order — number, status, shipping line, and total. Returns `items`: a list of objects with keys {number, shipping, status, total}. A single row with the order's details.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "ensureView": {
+        "view": "OrderConfirmation",
+        "route": "/orders/:id"
+      },
+      "steps": [],
+      "returns": {
+        "description": "A single row with the order's details.",
+        "kind": "list",
+        "query": {
+          "parts": [
+            {
+              "locators": [
+                "[data-component=\"OrderConfirmation\"]"
+              ]
+            }
+          ]
+        },
+        "fields": {
+          "number": {
+            "property": "number",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"OrderNumber\"]"
+            }
+          },
+          "shipping": {
+            "property": "shipping",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"OrderShipping\"]"
+            }
+          },
+          "status": {
+            "property": "status",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"OrderStatus\"]"
+            }
+          },
+          "total": {
+            "property": "total",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"OrderTotal\"]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "list_order_items",
+      "description": "List the items on the confirmed order. Returns `items`: a list of objects with keys {name, quantity, total}.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "ensureView": {
+        "view": "OrderConfirmation",
+        "route": "/orders/:id"
+      },
+      "steps": [],
+      "returns": {
+        "kind": "list",
+        "query": {
+          "parts": [
+            {
+              "locators": [
+                "[data-component=\"OrderConfirmation\"] [data-component=\"OrderItem\"]"
+              ]
+            }
+          ]
+        },
+        "fields": {
+          "name": {
+            "property": "name",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"ItemName\"]"
+            }
+          },
+          "quantity": {
+            "property": "quantity",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"ItemQuantity\"]"
+            }
+          },
+          "total": {
+            "property": "total",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"ItemTotal\"]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "view_order_history",
+      "description": "Go from the confirmation to the order history. Navigates to /orders.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "ensureView": {
+        "view": "OrderConfirmation",
+        "route": "/orders/:id"
+      },
+      "steps": [
+        {
+          "op": "click",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"OrderConfirmation\"]"
+                ]
+              },
+              {
+                "locators": [
+                  "[data-component=\"OrderConfirmation\"] [data-component=\"ViewOrdersLink\"]"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "op": "waitFor",
+          "view": "Orders",
+          "route": "/orders",
+          "timeoutMs": 5000
+        }
+      ],
+      "guidance": [
+        {
+          "tool": "list_orders",
+          "reason": "see every order placed in this session",
+          "when": "after_navigation",
+          "view": "Orders"
+        }
+      ]
+    },
+    {
+      "name": "continue_shopping_from_order",
+      "description": "Return from the confirmation to the catalog.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "ensureView": {
+        "view": "OrderConfirmation",
+        "route": "/orders/:id"
+      },
+      "steps": [
+        {
+          "op": "click",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"OrderConfirmation\"]"
+                ]
+              },
+              {
+                "locators": [
+                  "[data-component=\"OrderConfirmation\"] [data-component=\"ContinueShoppingLink\"]"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "op": "waitFor",
+          "view": "Catalog",
+          "route": "/",
+          "timeoutMs": 5000
+        }
+      ]
+    },
+    {
+      "name": "list_orders",
+      "description": "List the orders placed in this session — number, item count, total. Returns `items`: a list of objects with keys {items, number, total}. Empty until an order has been placed in this tab.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "ensureView": {
+        "view": "Orders",
+        "route": "/orders"
+      },
+      "steps": [],
+      "returns": {
+        "description": "Empty until an order has been placed in this tab.",
+        "kind": "list",
+        "query": {
+          "parts": [
+            {
+              "locators": [
+                "[data-component=\"OrderHistory\"] [data-component=\"OrderRow\"]"
+              ]
+            }
+          ]
+        },
+        "fields": {
+          "items": {
+            "property": "items",
+            "extractor": {
+              "kind": "attr",
+              "attr": "data-items"
+            }
+          },
+          "number": {
+            "property": "number",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"OrderLink\"]"
+            }
+          },
+          "total": {
+            "property": "total",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"OrderRowTotal\"]"
+            }
+          }
+        }
+      },
+      "guidance": [
+        {
+          "tool": "open_order",
+          "reason": "open one for its details",
+          "when": "now"
+        }
+      ]
+    },
+    {
+      "name": "open_order",
+      "description": "Open one order from the history by its number, e.g. \"ORD-1001\". Navigates to /orders/:id.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "number"
+        ]
+      },
+      "ensureView": {
+        "view": "Orders",
+        "route": "/orders"
+      },
+      "steps": [
+        {
+          "op": "click",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"OrderHistory\"] [data-component=\"OrderRow\"]"
+                ],
+                "preds": [
+                  {
+                    "property": "number",
+                    "extractor": {
+                      "kind": "text",
+                      "within": "[data-component=\"OrderLink\"]"
+                    },
+                    "op": "=",
+                    "value": "{{number}}"
+                  }
+                ]
+              },
+              {
+                "locators": [
+                  "[data-component=\"OrderHistory\"] [data-component=\"OrderRow\"] [data-component=\"OrderLink\"]"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "op": "waitFor",
+          "view": "OrderConfirmation",
+          "route": "/orders/:id",
+          "timeoutMs": 5000
+        }
+      ],
+      "guidance": [
+        {
+          "tool": "read_order",
+          "reason": "read its number, shipping, and total",
+          "when": "after_navigation",
+          "view": "OrderConfirmation"
+        }
+      ]
+    },
+    {
+      "name": "read_product",
+      "description": "Read the open product's title, category, price (for the selected size), and stock. Returns `items`: a list of objects with keys {category, price, stock, title}. A single row with the product's details.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "ensureView": {
+        "view": "Product",
+        "route": "/products/:slug"
+      },
+      "steps": [],
+      "returns": {
+        "description": "A single row with the product's details.",
+        "kind": "list",
+        "query": {
+          "parts": [
+            {
+              "locators": [
+                "[data-component=\"ProductDetail\"]"
+              ]
+            }
+          ]
+        },
+        "fields": {
+          "category": {
+            "property": "category",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"ProductCategory\"]"
+            }
+          },
+          "price": {
+            "property": "price",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"ProductPrice\"]"
+            }
+          },
+          "stock": {
+            "property": "stock",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"StockBadge\"]"
+            }
+          },
+          "title": {
+            "property": "title",
+            "extractor": {
+              "kind": "text",
+              "within": "[data-component=\"ProductTitle\"]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "choose_option",
+      "description": "Pick a size (or other option) on the product page and return the price for it. Only products with an OptionGroup have options. Returns `value` (string): The unit price for the chosen option.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "option": {
+            "type": "string",
+            "description": "The option label as shown, e.g. \"1 kg\"."
+          }
+        },
+        "required": [
+          "option"
+        ]
+      },
+      "ensureView": {
+        "view": "Product",
+        "route": "/products/:slug"
+      },
+      "steps": [
+        {
+          "op": "click",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"ProductDetail\"] [data-component=\"OptionGroup\"] [data-component=\"OptionButton\"]"
+                ],
+                "preds": [
+                  {
+                    "property": "label",
+                    "extractor": {
+                      "kind": "text"
+                    },
+                    "op": "=",
+                    "value": "{{option}}"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "op": "waitFor",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"ProductDetail\"] [data-component=\"OptionGroup\"] [data-component=\"OptionButton\"]"
+                ],
+                "preds": [
+                  {
+                    "property": "label",
+                    "extractor": {
+                      "kind": "text"
+                    },
+                    "op": "=",
+                    "value": "{{option}}"
+                  },
+                  {
+                    "property": "selected",
+                    "extractor": {
+                      "kind": "attr",
+                      "attr": "aria-pressed"
+                    },
+                    "op": "=",
+                    "value": "true"
+                  }
+                ]
+              }
+            ]
+          },
+          "timeoutMs": 5000
+        }
+      ],
+      "returns": {
+        "description": "The unit price for the chosen option.",
+        "kind": "value",
+        "query": {
+          "parts": [
+            {
+              "locators": [
+                "[data-component=\"ProductDetail\"]"
+              ]
+            }
+          ]
+        },
+        "extractor": {
+          "kind": "text",
+          "within": "[data-component=\"ProductPrice\"]"
+        }
+      },
+      "guidance": [
+        {
+          "tool": "set_quantity",
+          "reason": "set how many you want",
+          "when": "now"
+        }
+      ]
+    },
+    {
+      "name": "set_quantity",
+      "description": "Set how many units the next add_to_cart adds. Returns `value`: a single string.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "quantity": {
+            "type": "number",
+            "description": "A whole number, 1 or more."
+          }
+        },
+        "required": [
+          "quantity"
+        ]
+      },
+      "ensureView": {
+        "view": "Product",
+        "route": "/products/:slug"
+      },
+      "steps": [
+        {
+          "op": "fill",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"ProductDetail\"] [data-component=\"QuantityControl\"] [data-component=\"QuantityInput\"]"
+                ]
+              }
+            ]
+          },
+          "value": "{{quantity}}"
+        },
+        {
+          "op": "waitFor",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"ProductDetail\"] [data-component=\"QuantityControl\"]"
+                ],
+                "preds": [
+                  {
+                    "property": "quantity",
+                    "extractor": {
+                      "kind": "attr",
+                      "attr": "data-quantity"
+                    },
+                    "op": "=",
+                    "value": "{{quantity}}"
+                  }
+                ]
+              }
+            ]
+          },
+          "timeoutMs": 5000
+        }
+      ],
+      "returns": {
+        "kind": "value",
+        "query": {
+          "parts": [
+            {
+              "locators": [
+                "[data-component=\"ProductDetail\"] [data-component=\"QuantityControl\"]"
+              ]
+            }
+          ]
+        },
+        "extractor": {
+          "kind": "attr",
+          "attr": "data-quantity"
+        }
+      },
+      "guidance": [
+        {
+          "tool": "add_to_cart",
+          "reason": "add it in that size and quantity",
+          "when": "now"
+        }
+      ]
+    },
+    {
+      "name": "add_to_cart",
+      "description": "Add the open product, in the selected size and quantity, to the cart. Not idempotent — each call adds again. Fails on a sold-out product. Returns `value` (string): The number of units now in the cart.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "ensureView": {
+        "view": "Product",
+        "route": "/products/:slug"
+      },
+      "steps": [
+        {
+          "op": "click",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"ProductDetail\"] [data-component=\"AddToCartButton\"]"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "op": "waitFor",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"ProductDetail\"] [data-component=\"AddToCartButton\"]"
+                ],
+                "preds": [
+                  {
+                    "property": "added",
+                    "extractor": {
+                      "kind": "attr",
+                      "attr": "data-added"
+                    },
+                    "op": "=",
+                    "value": "true"
+                  }
+                ]
+              }
+            ]
+          },
+          "timeoutMs": 5000
+        }
+      ],
+      "returns": {
+        "description": "The number of units now in the cart.",
+        "kind": "value",
+        "query": {
+          "parts": [
+            {
+              "locators": [
+                "[data-component=\"ProductDetail\"] [data-component=\"CartSummary\"]"
+              ]
+            }
+          ]
+        },
+        "extractor": {
+          "kind": "attr",
+          "attr": "data-count"
+        }
+      },
+      "guidance": [
+        {
+          "tool": "view_cart_from_product",
+          "reason": "go and check the cart",
+          "when": "now"
+        }
+      ]
+    },
+    {
+      "name": "back_to_shop",
+      "description": "Return from the product page to the catalog.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "ensureView": {
+        "view": "Product",
+        "route": "/products/:slug"
+      },
+      "steps": [
+        {
+          "op": "click",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"ProductDetail\"]"
+                ]
+              },
+              {
+                "locators": [
+                  "[data-component=\"ProductDetail\"] [data-component=\"BackToShopLink\"]"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "op": "waitFor",
+          "view": "Catalog",
+          "route": "/",
+          "timeoutMs": 5000
+        }
+      ]
+    },
+    {
+      "name": "view_cart_from_product",
+      "description": "Go to the cart from the product page. Navigates to /cart.",
+      "mode": "live",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "ensureView": {
+        "view": "Product",
+        "route": "/products/:slug"
+      },
+      "steps": [
+        {
+          "op": "click",
+          "query": {
+            "parts": [
+              {
+                "locators": [
+                  "[data-component=\"ProductDetail\"] [data-component=\"CartSummary\"] [data-component=\"ViewCartLink\"]"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "op": "waitFor",
+          "view": "Cart",
+          "route": "/cart",
+          "timeoutMs": 5000
+        }
+      ],
+      "guidance": [
+        {
+          "tool": "read_cart",
+          "reason": "confirm the line, its size, and its quantity",
+          "when": "after_navigation",
+          "view": "Cart"
+        }
+      ]
+    }
+  ]
+}

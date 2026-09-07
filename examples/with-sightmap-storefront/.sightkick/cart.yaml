@@ -1,0 +1,105 @@
+version: 1
+
+tools:
+  - name: read_cart
+    description: List the cart's lines — name, size (when the product has one), quantity, and line total.
+    ensure_view: Cart
+    returns:
+      description: One row per cart line; empty when the cart is empty.
+      list:
+        rows: CartLine
+        fields:
+          name: name
+          option: option
+          quantity: quantity
+          line_total: line_total
+
+  - name: increase_quantity
+    description: Add one more unit to a cart line, by product name, and return the lines.
+    ensure_view: Cart
+    params:
+      - name: name
+        type: string
+        required: true
+    steps:
+      - click: { query: 'CartLine[name="{{name}}"] IncreaseButton' }
+    returns:
+      list:
+        rows: CartLine
+        fields:
+          name: name
+          quantity: quantity
+          line_total: line_total
+
+  - name: decrease_quantity
+    description: Remove one unit from a cart line, by product name, and return the lines. Does nothing at quantity 1 (the button is disabled); use remove_from_cart instead.
+    ensure_view: Cart
+    params:
+      - name: name
+        type: string
+        required: true
+    steps:
+      - click: { query: 'CartLine[name="{{name}}"] DecreaseButton' }
+    returns:
+      list:
+        rows: CartLine
+        fields:
+          name: name
+          quantity: quantity
+          line_total: line_total
+
+  - name: remove_from_cart
+    description: Remove a line from the cart by product name and return the lines left.
+    ensure_view: Cart
+    params:
+      - name: name
+        type: string
+        required: true
+    steps:
+      - click: { query: 'CartLine[name="{{name}}"] RemoveButton' }
+    returns:
+      list:
+        rows: CartLine
+        fields:
+          name: name
+          quantity: quantity
+
+  - name: apply_coupon
+    description: Enter a coupon code and apply it. The server decides; the returned message says whether it was accepted (SAVE10 and WELCOME5 are) or rejected.
+    ensure_view: Cart
+    params:
+      - name: code
+        type: string
+        required: true
+    steps:
+      - fill: { query: CouponInput, value: "{{code}}" }
+      - click: { query: ApplyCouponButton }
+      - wait_for: { query: 'CouponStatus[checked="{{code}}"]' }
+    returns:
+      description: 'The status line, e.g. "SAVE10 applied: 10% off".'
+      value: { query: CouponStatus, property: message }
+
+  - name: read_totals
+    description: Read the cart's subtotal, discount, and total (before shipping).
+    ensure_view: Cart
+    returns:
+      list:
+        rows: CartTotals
+        fields:
+          subtotal: subtotal
+          discount: discount
+          total: total
+
+  - name: proceed_to_checkout
+    description: Go from the cart to checkout. Only shown when the cart has lines.
+    ensure_view: Cart
+    steps:
+      - click: { query: CheckoutLink }
+      - wait_for: { view: Checkout }
+
+  - name: continue_shopping
+    description: Return from the cart to the catalog.
+    ensure_view: Cart
+    steps:
+      - click: { query: ContinueShoppingLink }
+      - wait_for: { view: Catalog }

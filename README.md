@@ -22,6 +22,7 @@ flowchart LR
 |---|---|
 | [`packages/next`](packages/next) | `@sightmap/next`: `sightmap-next seed` / `build` / `run-plan`, and `<SightkickTools/>` |
 | [`examples/with-sightmap-webmcp`](examples/with-sightmap-webmcp) | A Next.js 16 task board with a corpus, nine tools, three Gherkin features, and stamped plans |
+| [`examples/with-sightmap-storefront`](examples/with-sightmap-storefront) | A Next.js 16 storefront (route groups, dynamic routes, route handlers) with six views, 34 tools, six scenarios, and the adapter's end-to-end test |
 | [`docs/proposal.md`](docs/proposal.md) | The write-up: where this sits relative to `sitemap.ts`, what was verified, the PR sequence for the Vercel repos |
 
 ## Quick start
@@ -35,6 +36,17 @@ npm run test:plans                              # replays the Gherkin scenarios,
 ```
 
 <img src="docs/board.png" width="380" alt="The example board after agent-browser invoked add_task"> <img src="docs/task-detail.png" width="380" alt="A task page after agent-browser invoked open_task and mark_done">
+
+The storefront is the larger test bed. `test:e2e` needs the app running and checks the served
+artifacts, native registration, view scoping on every route, SPA re-registration, guidance, the
+`--init-script` path, and replays its six plans:
+
+```bash
+npm run build:storefront && npm run start:storefront &
+npm run test:e2e
+```
+
+<img src="docs/storefront-catalog.png" width="380" alt="The storefront catalog after agent-browser invoked quick_add_to_cart and filter_by_category"> <img src="docs/storefront-order.png" width="380" alt="An order confirmation reached through WebMCP tool calls alone">
 
 ## In your own app
 

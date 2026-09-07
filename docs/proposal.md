@@ -183,6 +183,16 @@ $ sightmap browser mcp list
 WebMCP (native) — 6 tool(s): …                            # sightmap's own view of the same surface
 ```
 
+**6. It holds up on a larger app.** [`examples/with-sightmap-storefront`](../examples/with-sightmap-storefront)
+has six views (catalog, product, cart, checkout, order, history), route groups with a group
+layout, `generateStaticParams`, two route handlers, and a coupon check that round-trips to the
+server. 34 tools compile from its corpus; `<SightkickTools/>` runs in fetch mode there (no
+inlined IR). Its `scripts/e2e.mjs` checks the served artifacts, native registration, the exact
+tool set on every route, SPA re-registration, guidance, the `--init-script` path, and replays
+six plans (48 steps) — 43 checks, all green, on Chrome for Testing 152. The same tools answer
+`sightmap browser mcp call` and `sightkick call` (`--via webmcp` and `--via cli`), and every
+view reads `0 orphaned T3 ✓` at 100% direct coverage.
+
 ## Where the humans are
 
 Sightmap authoring is nearly autonomous: seed, loop to zero orphans, read the YAML diff.
@@ -274,6 +284,14 @@ Things found on the way that a reviewer should know:
   with a capture present and `read_task` (same view, same returns) passing. Not chased.
 - **`sightmap capture --all` reported "cannot connect to Chrome at"** in a detached session
   while `capture --url` for each view worked. Not chased.
+- **agent-browser registers `--init-script` only when it launches the browser.** On a daemon
+  that is already running the flag is silently ignored, so the storefront's e2e test — which
+  opens pages without an init script first — timed out waiting for the runtime. Found by the
+  test, fixed in `run-plan`: the first `open` with an init script closes the running daemon
+  and the relaunch picks it up. agent-browser also has `addinitscript` for the runtime case.
+- **A number param interpolates as its decimal string** (`set_quantity` with `2` fills `"2"`),
+  which is what a `wait_for` predicate like `QuantityControl[quantity="{{quantity}}"]` needs.
+  Fine, but undocumented.
 - **Inlining the IR at build time** (`import ir from "../public/.well-known/sightkick.json"`)
   means a stale `.next/` can serve an old tool layer; `sightmap-next build` is wired as
   `prebuild` for that reason. Fetching the IR at runtime (pass a URL to `<SightkickTools/>`)
