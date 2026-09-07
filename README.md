@@ -71,4 +71,6 @@ WebMCP registry over CDP, so a JavaScript polyfill is invisible to it.
 ## Contributing
 
 `npm test` runs the package tests. Commits are signed off (`git commit -s`), as in the other
-Sightmap repos. MIT, see [`LICENSE`](LICENSE).
+Sightmap repos. A user-facing change to `packages/next` carries a changeset (`npm run changeset`);
+merging to `main` opens a Version Packages PR, and merging that publishes `@sightmap/next`. See
+[`.changeset/README.md`](.changeset/README.md). MIT, see [`LICENSE`](LICENSE).

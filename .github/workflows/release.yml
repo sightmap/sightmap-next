@@ -1,0 +1,64 @@
+name: release
+
+# One job, on every push to main:
+#
+#   While changesets are pending, changesets/action opens or updates a
+#   "Version Packages" PR that bumps packages/next/package.json and writes its
+#   CHANGELOG.md. Nothing is published yet.
+#
+#   Once that PR merges (no changesets left), the same step runs `npm run
+#   release` (`changeset publish`): it publishes @sightmap/next to npm, tags
+#   `@sightmap/next@X.Y.Z`, and creates the GitHub release. Ordinary pushes to
+#   main (docs, examples) are harmless: the version is already on npm, so
+#   publish is a no-op.
+#
+# npm auth uses OIDC trusted publishing; no NPM_TOKEN secret. One-time setup:
+# register a Trusted Publisher (GitHub Actions, repository "sightmap/sightmap-next",
+# workflow "release.yml") on the @sightmap/next package. The repo must be public
+# (npm rejects provenance from a private source repo).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+# Least privilege by default; the job widens only what it needs.
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # push the Version Packages PR branch, the tag, and the GitHub release
+      pull-requests: write
+      id-token: write # mint the OIDC token npm uses for trusted publishing
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: "https://registry.npmjs.org"
+
+      # Trusted publishing (OIDC) requires npm >= 11.5.1; ensure a new enough CLI
+      # regardless of what the Node image bundles.
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - run: npm ci
+      - run: npm test
+
+      # Version Packages PR while changesets are pending; publish once they are consumed.
+      - name: Version or publish
+        uses: changesets/action@v1
+        with:
+          version: npm run version-packages
+          publish: npm run release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true

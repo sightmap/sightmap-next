@@ -28,6 +28,9 @@ npm workspaces; one `npm install` at the root. The example depends on the packag
   storefront — it is the only test that exercises `build`, `<SightkickTools/>`, and `run-plan`
   through a real browser.
 - Sign off commits (`git commit -s`).
+- A user-facing change to `packages/next` needs a changeset: `npm run changeset`, pick the bump,
+  commit the `.changeset/*.md`. Never hand-edit the package version or `CHANGELOG.md`; the
+  `release` workflow does that through a Version Packages PR.
 
 ## Verify
 

@@ -15,7 +15,10 @@
     "build:storefront": "npm run build -w examples/with-sightmap-storefront",
     "start:storefront": "npm run start -w examples/with-sightmap-storefront",
     "test:plans:storefront": "npm run test:plans -w examples/with-sightmap-storefront",
-    "test:e2e": "npm run test:e2e -w examples/with-sightmap-storefront"
+    "test:e2e": "npm run test:e2e -w examples/with-sightmap-storefront",
+    "changeset": "npx --yes @changesets/cli@^2.29.7",
+    "version-packages": "npx --yes @changesets/cli@^2.29.7 version",
+    "release": "npx --yes @changesets/cli@^2.29.7 publish"
   },
   "engines": {
     "node": ">=20"
