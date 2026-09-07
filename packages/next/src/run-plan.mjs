@@ -120,7 +120,17 @@ class AgentBrowser {
   }
   open(url, { initScript } = {}) {
     const args = ["open", url];
-    if (initScript) args.unshift("--init-script", initScript);
+    if (initScript) {
+      // agent-browser registers init scripts when it *launches* the browser;
+      // on an already-running daemon the flag is silently ignored. So the
+      // first open with a given init script (or a switch to a different one)
+      // closes the session first, and later opens reuse the relaunched daemon.
+      if (this.initScript !== initScript) {
+        this.exec(["close"]);
+        this.initScript = initScript;
+      }
+      args.unshift("--init-script", initScript);
+    }
     // The daemon may still be shutting down from a previous close; retry briefly.
     let last;
     for (let attempt = 0; attempt < 5; attempt++) {

@@ -73,6 +73,11 @@ Sightkick's `scripts/run-plan.mjs` (`ok`, `value.{equals,contains,absent}`,
 `list.{length,contains,excludes}`); only the executor differs. `--stamp` records the
 feature-file and compiled-IR hashes; a later run refuses to proceed when either moved.
 
+`--init-script` boots the tools from `webmcp.init.js` instead of relying on the page's own
+`<SightkickTools/>`. agent-browser only registers init scripts when it launches the browser,
+so the first `open` with one closes any daemon already running (later plans in the same run
+reuse the relaunched one). Without `--init-script`, plans run against whatever the page ships.
+
 ## Tests
 
 ```bash
