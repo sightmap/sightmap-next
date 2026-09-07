@@ -1,0 +1,3 @@
+# Local sightmap browser session state
+.sightmap/.session
+.sightmap/snapshots/

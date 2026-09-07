@@ -1,0 +1,91 @@
+version: 1
+
+tools:
+  - name: fill_shipping_details
+    description: Fill in the five shipping fields. Nothing is validated until place_order.
+    ensure_view: Checkout
+    params:
+      - name: full_name
+        type: string
+        required: true
+      - name: email
+        type: string
+        required: true
+      - name: address
+        type: string
+        required: true
+      - name: city
+        type: string
+        required: true
+      - name: postal_code
+        type: string
+        required: true
+    steps:
+      - fill: { query: FullNameInput, value: "{{full_name}}" }
+      - fill: { query: EmailInput, value: "{{email}}" }
+      - fill: { query: AddressInput, value: "{{address}}" }
+      - fill: { query: CityInput, value: "{{city}}" }
+      - fill: { query: PostalCodeInput, value: "{{postal_code}}" }
+
+  - name: choose_shipping
+    description: Pick Standard ($5.00, 3–5 days) or Express ($15.00, next day) and return the order total with it.
+    ensure_view: Checkout
+    params:
+      - name: method
+        type: enum
+        required: true
+        values: [Standard, Express]
+    steps:
+      - click: { query: 'ShippingOption[method="{{method}}"] ShippingRadio' }
+      - wait_for: { query: 'ShippingOption[method="{{method}}"][selected="true"]' }
+    returns:
+      description: The grand total including shipping.
+      value: { query: OrderSummary, property: total }
+
+  - name: read_order_summary
+    description: List what is about to be ordered — one row per line with name, quantity, and line total.
+    ensure_view: Checkout
+    returns:
+      list:
+        rows: SummaryLine
+        fields:
+          name: name
+          quantity: quantity
+          total: total
+
+  - name: read_checkout_totals
+    description: Read subtotal, discount, shipping, and the grand total.
+    ensure_view: Checkout
+    returns:
+      list:
+        rows: OrderSummary
+        fields:
+          subtotal: subtotal
+          discount: discount
+          shipping: shipping
+          total: total
+
+  - name: place_order
+    description: Submit the order. With valid details this navigates to the confirmation page (/orders/:id) and empties the cart. With invalid details the page stays put and this tool fails — call read_form_errors to see why.
+    ensure_view: Checkout
+    steps:
+      - click: { query: PlaceOrderButton }
+      - wait_for: { view: OrderConfirmation }
+
+  - name: read_form_errors
+    description: List the validation errors shown after a failed place_order — which field, and the message.
+    ensure_view: Checkout
+    returns:
+      description: Empty when nothing is wrong or nothing was submitted yet.
+      list:
+        rows: FieldError
+        fields:
+          field: field
+          message: message
+
+  - name: back_to_cart
+    description: Return from checkout to the cart.
+    ensure_view: Checkout
+    steps:
+      - click: { query: BackToCartLink }
+      - wait_for: { view: Cart }

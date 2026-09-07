@@ -1,0 +1,120 @@
+version: 1
+
+views:
+  - name: Product
+    route: /products/:slug
+    url: http://localhost:3000/products/ethiopia-yirgacheffe
+    source: app/(shop)/products/[slug]/page.tsx
+    dependencies:
+      - app/layout.tsx
+      - components/ProductDetail.tsx
+      - lib/catalog.ts
+      - lib/store.ts
+    description: One product — pick a size where there is one, set a quantity, add to the cart.
+    memory:
+      - The page is a server component; ProductDetail is the client island that owns option, quantity, and the cart
+      - ProductPrice reflects the selected option (1 kg bags cost more than 250 g)
+      - AddToCartButton reads "Added to cart" and sets data-added=true after a click; changing the option or quantity resets it. Each click adds again — it is not idempotent
+      - QuantityInput is a controlled number input; the runtime fills it through the native value setter, and data-quantity on QuantityControl is the parsed value
+    components:
+      - name: ProductDetail
+        selector: '[data-component="ProductDetail"]'
+        source: components/ProductDetail.tsx
+        properties:
+          - name: title
+            extract: ProductTitle.text
+          - name: category
+            extract: ProductCategory.text
+          - name: price
+            extract: ProductPrice.text
+          - name: stock
+            extract: StockBadge.text
+          - name: slug
+            extract: attr=data-slug
+        children:
+          - name: BackToShopLink
+            selector: '[data-component="BackToShopLink"]'
+          - name: ProductTitle
+            selector: '[data-component="ProductTitle"]'
+            properties:
+              - name: text
+                extract: text
+          - name: ProductCategory
+            selector: '[data-component="ProductCategory"]'
+            properties:
+              - name: text
+                extract: text
+          - name: StockBadge
+            selector: '[data-component="StockBadge"]'
+            properties:
+              - name: text
+                extract: text
+          - name: ProductPrice
+            selector: '[data-component="ProductPrice"]'
+            properties:
+              - name: text
+                extract: text
+          - name: ProductDescription
+            selector: '[data-component="ProductDescription"]'
+          - name: OptionGroup
+            selector: '[data-component="OptionGroup"]'
+            description: Present only for products with options (bag sizes)
+            properties:
+              - name: name
+                extract: attr=data-name
+            children:
+              - name: OptionButton
+                selector: '[data-component="OptionButton"]'
+                properties:
+                  - name: label
+                    extract: text
+                  - name: selected
+                    extract: attr=aria-pressed
+          - name: QuantityControl
+            selector: '[data-component="QuantityControl"]'
+            properties:
+              - name: quantity
+                extract: attr=data-quantity
+            children:
+              - name: DecrementButton
+                selector: '[data-component="DecrementButton"]'
+                description: Disabled at quantity 1
+              - name: QuantityInput
+                selector: '[data-component="QuantityInput"]'
+              - name: IncrementButton
+                selector: '[data-component="IncrementButton"]'
+          - name: AddToCartButton
+            selector: '[data-component="AddToCartButton"]'
+            properties:
+              - name: label
+                extract: text
+              - name: added
+                extract: attr=data-added
+          - name: CartSummary
+            selector: '[data-component="CartSummary"]'
+            properties:
+              - name: count
+                extract: attr=data-count
+            children:
+              - name: ViewCartLink
+                selector: '[data-component="ViewCartLink"]'
+      - name: ProductMissing
+        selector: '[data-component="ProductMissing"]'
+        description: Shown for a slug the catalog does not have
+        children:
+          - name: BackToShopLink
+            selector: '[data-component="BackToShopLink"]'
+
+requests:
+  - name: ProductsApi
+    route: /api/products
+    method: GET
+    source: app/api/products/route.ts
+    description: The catalog as JSON. Same q / category / sort query parameters as the page's controls.
+    response:
+      fields:
+        - name: count
+          type: number
+        - name: products
+          type: array
+          description: slug, name, category, price (cents), inStock

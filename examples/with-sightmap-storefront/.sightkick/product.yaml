@@ -1,0 +1,68 @@
+version: 1
+
+tools:
+  - name: read_product
+    description: Read the open product's title, category, price (for the selected size), and stock.
+    ensure_view: Product
+    returns:
+      description: A single row with the product's details.
+      list:
+        rows: ProductDetail
+        fields:
+          title: title
+          category: category
+          price: price
+          stock: stock
+
+  - name: choose_option
+    description: Pick a size (or other option) on the product page and return the price for it. Only products with an OptionGroup have options.
+    ensure_view: Product
+    params:
+      - name: option
+        type: string
+        required: true
+        description: The option label as shown, e.g. "1 kg".
+    steps:
+      - click: { query: 'OptionButton[label="{{option}}"]' }
+      - wait_for: { query: 'OptionButton[label="{{option}}"][selected="true"]' }
+    returns:
+      description: The unit price for the chosen option.
+      value: { query: ProductDetail, property: price }
+
+  - name: set_quantity
+    description: Set how many units the next add_to_cart adds.
+    ensure_view: Product
+    params:
+      - name: quantity
+        type: number
+        required: true
+        description: A whole number, 1 or more.
+    steps:
+      - fill: { query: QuantityInput, value: "{{quantity}}" }
+      - wait_for: { query: 'QuantityControl[quantity="{{quantity}}"]' }
+    returns:
+      value: { query: QuantityControl, property: quantity }
+
+  - name: add_to_cart
+    description: Add the open product, in the selected size and quantity, to the cart. Not idempotent — each call adds again. Fails on a sold-out product.
+    ensure_view: Product
+    steps:
+      - click: { query: AddToCartButton }
+      - wait_for: { query: 'AddToCartButton[added="true"]' }
+    returns:
+      description: The number of units now in the cart.
+      value: { query: CartSummary, property: count }
+
+  - name: back_to_shop
+    description: Return from the product page to the catalog.
+    ensure_view: Product
+    steps:
+      - click: { query: 'ProductDetail BackToShopLink' }
+      - wait_for: { view: Catalog }
+
+  - name: view_cart_from_product
+    description: Go to the cart from the product page. Navigates to /cart.
+    ensure_view: Product
+    steps:
+      - click: { query: ViewCartLink }
+      - wait_for: { view: Cart }

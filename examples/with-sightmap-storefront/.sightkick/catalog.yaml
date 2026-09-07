@@ -1,0 +1,115 @@
+version: 1
+name: storefront
+
+# The tool layer: named, atomic actions over the corpus in ../.sightmap/.
+# Tools never carry selectors — they address the app by component name and
+# extracted property, and `sightkick build` refuses any name the corpus
+# doesn't have. Every tool sets ensure_view, so it registers only on pages
+# whose route matches (see sightkick#9 for why that is also required today).
+
+tools:
+  - name: list_products
+    description: List the products currently shown in the catalog, with price, category, stock, and whether each is already in the cart.
+    ensure_view: Catalog
+    returns:
+      description: One row per visible product card.
+      list:
+        rows: ProductCard
+        fields:
+          name: name
+          price: price
+          category: category
+          stock: stock
+          in_cart: in_cart
+
+  - name: search_products
+    description: Type into the catalog search box (matches product name and description) and return the products still shown. Pass an empty string to clear the search.
+    ensure_view: Catalog
+    params:
+      - name: query
+        type: string
+        required: true
+        description: The search text, e.g. "Ethiopia" or "kettle".
+    steps:
+      - fill: { query: SearchInput, value: "{{query}}" }
+      - wait_for: { query: 'Catalog[query="{{query}}"]' }
+    returns:
+      list:
+        rows: ProductCard
+        fields:
+          name: name
+          price: price
+          category: category
+          stock: stock
+
+  - name: filter_by_category
+    description: Show only one category of product (or All), and return the products now shown. Combines with the current search.
+    ensure_view: Catalog
+    params:
+      - name: category
+        type: enum
+        required: true
+        values: [All, Coffee, Tea, Gear]
+    steps:
+      - click: { query: 'CategoryButton[label="{{category}}"]' }
+      - wait_for: { query: 'CategoryButton[label="{{category}}"][active="true"]' }
+    returns:
+      list:
+        rows: ProductCard
+        fields:
+          name: name
+          price: price
+          category: category
+
+  - name: sort_products
+    description: Sort the catalog and return the products in their new order.
+    ensure_view: Catalog
+    params:
+      - name: sort
+        type: enum
+        required: true
+        values: ["Featured", "Price: low to high", "Price: high to low", "Name"]
+    steps:
+      - click: { query: 'SortButton[label="{{sort}}"]' }
+      - wait_for: { query: 'SortButton[label="{{sort}}"][active="true"]' }
+    returns:
+      list:
+        rows: ProductCard
+        fields:
+          name: name
+          price: price
+
+  - name: open_product
+    description: Open a product's page from the catalog by its exact name. Navigates to /products/:slug.
+    ensure_view: Catalog
+    params:
+      - name: name
+        type: string
+        required: true
+        description: The product name as shown, e.g. "Ethiopia Yirgacheffe".
+    steps:
+      - click: { query: 'ProductCard[name="{{name}}"] ProductLink' }
+      - wait_for: { view: Product }
+
+  - name: quick_add_to_cart
+    description: Add one unit of a product to the cart straight from the catalog (its first size, if it has sizes). Idempotent — a product already in the cart is left alone. Fails on a sold-out product, whose button is disabled.
+    ensure_view: Catalog
+    params:
+      - name: name
+        type: string
+        required: true
+    guard:
+      present: { query: 'ProductCard[name="{{name}}"][in_cart="true"]' }
+    steps:
+      - click: { query: 'ProductCard[name="{{name}}"] QuickAddButton' }
+      - wait_for: { query: 'ProductCard[name="{{name}}"][in_cart="true"]' }
+    returns:
+      description: The number of units now in the cart, from the nav badge.
+      value: { query: CartLink, property: count }
+
+  - name: view_cart
+    description: Go to the cart from the catalog via the nav link. Navigates to /cart.
+    ensure_view: Catalog
+    steps:
+      - click: { query: CartLink }
+      - wait_for: { view: Cart }

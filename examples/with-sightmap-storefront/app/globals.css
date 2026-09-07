@@ -1,0 +1,170 @@
+:root {
+  color-scheme: light dark;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+body {
+  margin: 0;
+  max-width: 52rem;
+  padding: 1.5rem;
+  margin-inline: auto;
+  line-height: 1.5;
+}
+h1 {
+  font-size: 1.5rem;
+  margin: 0 0 1rem;
+}
+nav[data-component="SiteNav"] {
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #8884;
+  padding-bottom: 0.75rem;
+}
+nav[data-component="SiteNav"] a:last-child {
+  margin-left: auto;
+}
+[data-component="CartCount"] {
+  display: inline-block;
+  min-width: 1.4rem;
+  text-align: center;
+  padding: 0 0.3rem;
+  border-radius: 1rem;
+  border: 1px solid #8886;
+  font-size: 0.85rem;
+}
+input,
+button {
+  font: inherit;
+}
+input {
+  padding: 0.45rem 0.6rem;
+}
+button {
+  padding: 0.4rem 0.7rem;
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+button[aria-pressed="true"] {
+  font-weight: 700;
+  text-decoration: underline;
+}
+[role="group"] {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+[data-component="CatalogControls"] {
+  display: grid;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+[data-component="ProductGrid"],
+[data-component="CartLines"],
+[data-component="OrderList"],
+[data-component="OrderItems"],
+[data-component="OrderSummary"] ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+[data-component="ProductGrid"] {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 0.75rem;
+}
+[data-component="ProductCard"] {
+  border: 1px solid #8884;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.35rem;
+}
+[data-component="ProductCard"] a {
+  font-weight: 600;
+}
+[data-component="StockBadge"] {
+  display: inline-block;
+  padding: 0 0.5rem;
+  border-radius: 1rem;
+  border: 1px solid #8886;
+  font-size: 0.85rem;
+  width: fit-content;
+}
+[data-stock="sold-out"] [data-component="StockBadge"] {
+  opacity: 0.7;
+}
+[data-component="CartLine"],
+[data-component="OrderRow"],
+[data-component="OrderItem"],
+[data-component="SummaryLine"] {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #8882;
+}
+[data-component="LineName"],
+[data-component="SummaryName"],
+[data-component="ItemName"] {
+  flex: 1;
+  font-weight: 600;
+}
+[data-component="LineQuantity"] {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem 1rem;
+  margin: 1rem 0;
+}
+dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+fieldset {
+  border: 1px solid #8884;
+  border-radius: 0.5rem;
+  margin: 0 0 1rem;
+  display: grid;
+  gap: 0.5rem;
+}
+label {
+  display: grid;
+  gap: 0.2rem;
+}
+[data-component="ShippingOption"] {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+[data-component="FieldError"],
+[data-component="FormErrors"] {
+  color: #c0392b;
+  font-size: 0.9rem;
+  margin: 0;
+}
+[data-component="CouponStatus"][data-state="applied"] {
+  color: #1e8449;
+}
+[data-component="CouponStatus"][data-state="invalid"] {
+  color: #c0392b;
+}
+[data-component="SecureBanner"] {
+  font-size: 0.85rem;
+  opacity: 0.75;
+  margin: 0 0 0.75rem;
+}
+.actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 1rem;
+}

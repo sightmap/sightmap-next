@@ -1,0 +1,127 @@
+{
+  "version": 1,
+  "app": "..",
+  "start": "/",
+  "scenario": {
+    "feature": "features/cart.feature",
+    "name": "Adjust quantities and remove a line",
+    "hash": "sha256:5a1cba4bc346b8ba186671e74f076e5b732052bda18ab7e5bd01cb6eb9bc43ef"
+  },
+  "steps": [
+    {
+      "gherkin": "When I quick-add \"Earl Grey\"",
+      "tool": "quick_add_to_cart",
+      "params": {
+        "name": "Earl Grey"
+      },
+      "expect": {
+        "ok": true,
+        "value": {
+          "equals": "1"
+        }
+      }
+    },
+    {
+      "gherkin": "And I quick-add \"Chamomile\"",
+      "tool": "quick_add_to_cart",
+      "params": {
+        "name": "Chamomile"
+      },
+      "expect": {
+        "ok": true,
+        "value": {
+          "equals": "2"
+        }
+      }
+    },
+    {
+      "gherkin": "And I quick-add \"Earl Grey\" again / Then the cart badge still says 2",
+      "tool": "quick_add_to_cart",
+      "params": {
+        "name": "Earl Grey"
+      },
+      "expect": {
+        "ok": true,
+        "value": {
+          "equals": "2"
+        }
+      }
+    },
+    {
+      "gherkin": "When I go to the cart",
+      "tool": "view_cart",
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "gherkin": "Then the cart lists 2 lines",
+      "tool": "read_cart",
+      "expect": {
+        "ok": true,
+        "list": {
+          "length": 2,
+          "contains": {
+            "name": "Earl Grey",
+            "quantity": "1",
+            "line_total": "$9.00"
+          }
+        }
+      }
+    },
+    {
+      "gherkin": "When I add one more \"Earl Grey\" / Then \"Earl Grey\" is quantity 2 for \"$18.00\"",
+      "tool": "increase_quantity",
+      "params": {
+        "name": "Earl Grey"
+      },
+      "expect": {
+        "ok": true,
+        "list": {
+          "length": 2,
+          "contains": {
+            "name": "Earl Grey",
+            "quantity": "2",
+            "line_total": "$18.00"
+          }
+        }
+      }
+    },
+    {
+      "gherkin": "When I remove \"Chamomile\" / Then only \"Earl Grey\" is left",
+      "tool": "remove_from_cart",
+      "params": {
+        "name": "Chamomile"
+      },
+      "expect": {
+        "ok": true,
+        "list": {
+          "length": 1,
+          "contains": {
+            "name": "Earl Grey"
+          },
+          "excludes": {
+            "name": "Chamomile"
+          }
+        }
+      }
+    },
+    {
+      "gherkin": "And the total is \"$18.00\"",
+      "tool": "read_totals",
+      "expect": {
+        "ok": true,
+        "list": {
+          "length": 1,
+          "contains": {
+            "subtotal": "$18.00",
+            "discount": "$0.00",
+            "total": "$18.00"
+          }
+        }
+      }
+    }
+  ],
+  "irHash": "sha256:9fbe7e1749fb91e5bfd5d89beeed41cf67c5eb59a9c557670bc4147fbc2aaace",
+  "generatedAt": "2026-09-07T19:42:44.637Z"
+}

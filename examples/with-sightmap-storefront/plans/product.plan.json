@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "app": "..",
+  "start": "/",
+  "scenario": {
+    "feature": "features/product.feature",
+    "name": "Two kilos of Ethiopia Yirgacheffe",
+    "hash": "sha256:6ea12dc0d454bdbf2976a870fd9b98a530eaf4e6427b40fc8f8a6e61dd325513"
+  },
+  "steps": [
+    {
+      "gherkin": "When I open \"Ethiopia Yirgacheffe\"",
+      "tool": "open_product",
+      "params": {
+        "name": "Ethiopia Yirgacheffe"
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "gherkin": "Then the product page shows it at \"$18.00\", in stock",
+      "tool": "read_product",
+      "expect": {
+        "ok": true,
+        "list": {
+          "length": 1,
+          "contains": {
+            "title": "Ethiopia Yirgacheffe",
+            "category": "Coffee",
+            "price": "$18.00",
+            "stock": "In stock"
+          }
+        }
+      }
+    },
+    {
+      "gherkin": "When I choose the \"1 kg\" bag / Then the price becomes \"$60.00\"",
+      "tool": "choose_option",
+      "params": {
+        "option": "1 kg"
+      },
+      "expect": {
+        "ok": true,
+        "value": {
+          "equals": "$60.00"
+        }
+      }
+    },
+    {
+      "gherkin": "When I set the quantity to 2",
+      "tool": "set_quantity",
+      "params": {
+        "quantity": 2
+      },
+      "expect": {
+        "ok": true,
+        "value": {
+          "equals": "2"
+        }
+      }
+    },
+    {
+      "gherkin": "And I add it to the cart",
+      "tool": "add_to_cart",
+      "expect": {
+        "ok": true,
+        "value": {
+          "equals": "2"
+        }
+      }
+    },
+    {
+      "gherkin": "And I view the cart",
+      "tool": "view_cart_from_product",
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "gherkin": "Then the cart has one line: \"Ethiopia Yirgacheffe\" in \"1 kg\", quantity 2, for \"$120.00\"",
+      "tool": "read_cart",
+      "expect": {
+        "ok": true,
+        "list": {
+          "length": 1,
+          "contains": {
+            "name": "Ethiopia Yirgacheffe",
+            "option": "1 kg",
+            "quantity": "2",
+            "line_total": "$120.00"
+          }
+        }
+      }
+    }
+  ],
+  "irHash": "sha256:9fbe7e1749fb91e5bfd5d89beeed41cf67c5eb59a9c557670bc4147fbc2aaace",
+  "generatedAt": "2026-09-07T19:42:45.843Z"
+}

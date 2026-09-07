@@ -1,0 +1,180 @@
+{
+  "version": 1,
+  "app": "..",
+  "start": "/",
+  "scenario": {
+    "feature": "features/checkout.feature",
+    "name": "Place an order with express shipping",
+    "hash": "sha256:447dd323e137c5d725e71d2e69c0f6288ad55e9716a97cdfd9aedac0f756dcf8"
+  },
+  "steps": [
+    {
+      "gherkin": "When I quick-add \"Ceramic dripper\"",
+      "tool": "quick_add_to_cart",
+      "params": {
+        "name": "Ceramic dripper"
+      },
+      "expect": {
+        "ok": true,
+        "value": {
+          "equals": "1"
+        }
+      }
+    },
+    {
+      "gherkin": "And I go to the cart",
+      "tool": "view_cart",
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "gherkin": "And I apply the code \"WELCOME5\"",
+      "tool": "apply_coupon",
+      "params": {
+        "code": "WELCOME5"
+      },
+      "expect": {
+        "ok": true,
+        "value": {
+          "equals": "WELCOME5 applied: $5.00 off"
+        }
+      }
+    },
+    {
+      "gherkin": "And I proceed to checkout",
+      "tool": "proceed_to_checkout",
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "gherkin": "And I enter my shipping details as Ada Lovelace, ada@example.com, 12 Analytical Way, London N1 9GU",
+      "tool": "fill_shipping_details",
+      "params": {
+        "full_name": "Ada Lovelace",
+        "email": "ada@example.com",
+        "address": "12 Analytical Way",
+        "city": "London",
+        "postal_code": "N1 9GU"
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "gherkin": "And I choose Express shipping",
+      "tool": "choose_shipping",
+      "params": {
+        "method": "Express"
+      },
+      "expect": {
+        "ok": true,
+        "value": {
+          "equals": "$34.00"
+        }
+      }
+    },
+    {
+      "gherkin": "Then the summary shows subtotal \"$24.00\", discount \"−$5.00\", shipping \"$15.00\", total \"$34.00\"",
+      "tool": "read_checkout_totals",
+      "expect": {
+        "ok": true,
+        "list": {
+          "length": 1,
+          "contains": {
+            "subtotal": "$24.00",
+            "discount": "−$5.00",
+            "shipping": "$15.00",
+            "total": "$34.00"
+          }
+        }
+      }
+    },
+    {
+      "gherkin": "When I place the order",
+      "tool": "place_order",
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "gherkin": "Then order \"ORD-1001\" is confirmed for \"$34.00\", shipped Express to my address",
+      "tool": "read_order",
+      "expect": {
+        "ok": true,
+        "list": {
+          "length": 1,
+          "contains": {
+            "number": "ORD-1001",
+            "status": "Confirmed",
+            "total": "$34.00",
+            "shipping": "Express to 12 Analytical Way, London N1 9GU"
+          }
+        }
+      }
+    },
+    {
+      "gherkin": "And it lists one \"Ceramic dripper\"",
+      "tool": "list_order_items",
+      "expect": {
+        "ok": true,
+        "list": {
+          "length": 1,
+          "contains": {
+            "name": "Ceramic dripper",
+            "quantity": "1",
+            "total": "$24.00"
+          }
+        }
+      }
+    },
+    {
+      "gherkin": "When I view my order history",
+      "tool": "view_order_history",
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "gherkin": "Then \"ORD-1001\" is the only order, 1 item, \"$34.00\"",
+      "tool": "list_orders",
+      "expect": {
+        "ok": true,
+        "list": {
+          "length": 1,
+          "contains": {
+            "number": "ORD-1001",
+            "items": "1",
+            "total": "$34.00"
+          }
+        }
+      }
+    },
+    {
+      "gherkin": "When I open \"ORD-1001\"",
+      "tool": "open_order",
+      "params": {
+        "number": "ORD-1001"
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "gherkin": "Then I am back on its confirmation",
+      "tool": "read_order",
+      "expect": {
+        "ok": true,
+        "list": {
+          "contains": {
+            "number": "ORD-1001",
+            "status": "Confirmed"
+          }
+        }
+      }
+    }
+  ],
+  "irHash": "sha256:9fbe7e1749fb91e5bfd5d89beeed41cf67c5eb59a9c557670bc4147fbc2aaace",
+  "generatedAt": "2026-09-07T19:42:45.257Z"
+}

@@ -11,7 +11,11 @@
     "test": "npm test -w packages/next",
     "build:example": "npm run build -w examples/with-sightmap-webmcp",
     "start:example": "npm run start -w examples/with-sightmap-webmcp",
-    "test:plans": "npm run test:plans -w examples/with-sightmap-webmcp"
+    "test:plans": "npm run test:plans -w examples/with-sightmap-webmcp",
+    "build:storefront": "npm run build -w examples/with-sightmap-storefront",
+    "start:storefront": "npm run start -w examples/with-sightmap-storefront",
+    "test:plans:storefront": "npm run test:plans -w examples/with-sightmap-storefront",
+    "test:e2e": "npm run test:e2e -w examples/with-sightmap-storefront"
   },
   "engines": {
     "node": ">=20"

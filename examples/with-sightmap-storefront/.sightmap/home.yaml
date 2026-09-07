@@ -1,0 +1,103 @@
+version: 1
+
+# Seeded by `sightmap-next seed`, then curated against the running app with the
+# sightmap-authoring skill (snapshot --coverage until 0 orphaned nodes).
+
+views:
+  - name: Catalog
+    route: /
+    url: http://localhost:3000/
+    source: app/(shop)/page.tsx
+    dependencies:
+      - app/layout.tsx
+      - components/Catalog.tsx
+      - lib/catalog.ts
+      - lib/store.ts
+    description: The shop — search, filter by category, sort, quick-add to the cart, or open a product.
+    memory:
+      - Nine products; Sumatra Mandheling is sold out, so its QuickAddButton is disabled and quick_add_to_cart on it times out rather than adding
+      - Search matches name and description, case-insensitively; "coffee" finds nothing because no product is named that way — filter by category instead
+      - 'Sort labels are exactly "Featured", "Price: low to high", "Price: high to low", "Name"'
+      - Quick add always adds one unit of the product's first option; use the product page to pick a size or quantity
+    components:
+      - name: Catalog
+        selector: '[data-component="Catalog"]'
+        source: components/Catalog.tsx
+        properties:
+          - name: count
+            extract: attr=data-count
+          - name: query
+            extract: attr=data-query
+        children:
+          - name: SearchInput
+            selector: '[data-component="SearchInput"]'
+            description: Controlled React input; filters as you type
+          - name: CategoryFilter
+            selector: '[data-component="CategoryFilter"]'
+            children:
+              - name: CategoryButton
+                selector: '[data-component="CategoryButton"]'
+                properties:
+                  - name: label
+                    extract: text
+                  - name: active
+                    extract: attr=aria-pressed
+          - name: SortBar
+            selector: '[data-component="SortBar"]'
+            children:
+              - name: SortButton
+                selector: '[data-component="SortButton"]'
+                properties:
+                  - name: label
+                    extract: text
+                  - name: active
+                    extract: attr=aria-pressed
+          - name: ResultCount
+            selector: '[data-component="ResultCount"]'
+            properties:
+              - name: text
+                extract: text
+          - name: ProductGrid
+            selector: '[data-component="ProductGrid"]'
+          - name: ProductCard
+            selector: '[data-component="ProductCard"]'
+            description: One product. Name lives in the link; stock and cart membership are mirrored onto data attributes so they are filterable
+            properties:
+              - name: name
+                extract: ProductLink.text
+              - name: price
+                extract: ProductPrice.text
+              - name: stock
+                extract: StockBadge.text
+              - name: category
+                extract: attr=data-category
+              - name: slug
+                extract: attr=data-slug
+              - name: in_cart
+                extract: attr=data-in-cart
+            children:
+              - name: ProductLink
+                selector: '[data-component="ProductLink"]'
+                description: Client-side navigation to /products/:slug
+                properties:
+                  - name: text
+                    extract: text
+              - name: ProductPrice
+                selector: '[data-component="ProductPrice"]'
+                properties:
+                  - name: text
+                    extract: text
+              - name: StockBadge
+                selector: '[data-component="StockBadge"]'
+                properties:
+                  - name: text
+                    extract: text
+              - name: QuickAddButton
+                selector: '[data-component="QuickAddButton"]'
+                description: Reads "Add to cart", then "In cart" once any line for the product exists; disabled when sold out
+                properties:
+                  - name: label
+                    extract: text
+          - name: EmptyResults
+            selector: '[data-component="EmptyResults"]'
+            description: Rendered only when no product matches the search and category

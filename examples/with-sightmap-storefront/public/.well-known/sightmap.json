@@ -1,0 +1,1652 @@
+{
+  "memory": [
+    "Cart, coupon, and order state is in-memory per tab; a full page load starts from an empty cart and no orders, so every fresh open is the same starting point",
+    "All navigation is client-side (next/link, router.push); state survives it"
+  ],
+  "globals": [
+    {
+      "name": "SiteNav",
+      "selectors": [
+        "[data-component=\"SiteNav\"]"
+      ],
+      "source": "components/SiteNav.tsx"
+    },
+    {
+      "name": "NavLink",
+      "selectors": [
+        "[data-component=\"SiteNav\"] [data-component=\"NavLink\"]"
+      ],
+      "properties": [
+        {
+          "name": "label",
+          "extract": "text"
+        }
+      ],
+      "parentChain": [
+        "SiteNav"
+      ]
+    },
+    {
+      "name": "CartLink",
+      "selectors": [
+        "[data-component=\"SiteNav\"] [data-component=\"CartLink\"]"
+      ],
+      "properties": [
+        {
+          "name": "count",
+          "extract": "attr=data-count"
+        }
+      ],
+      "parentChain": [
+        "SiteNav"
+      ]
+    },
+    {
+      "name": "CartCount",
+      "selectors": [
+        "[data-component=\"SiteNav\"] [data-component=\"CartLink\"] [data-component=\"CartCount\"]"
+      ],
+      "properties": [
+        {
+          "name": "text",
+          "extract": "text"
+        }
+      ],
+      "parentChain": [
+        "SiteNav",
+        "CartLink"
+      ]
+    },
+    {
+      "name": "CheckoutShell",
+      "selectors": [
+        "[data-component=\"CheckoutShell\"]"
+      ],
+      "source": "app/(checkout)/layout.tsx"
+    },
+    {
+      "name": "SecureBanner",
+      "selectors": [
+        "[data-component=\"CheckoutShell\"] [data-component=\"SecureBanner\"]"
+      ],
+      "parentChain": [
+        "CheckoutShell"
+      ]
+    },
+    {
+      "name": "RouteAnnouncer",
+      "selectors": [
+        "#__next-route-announcer__"
+      ]
+    }
+  ],
+  "views": [
+    {
+      "name": "Cart",
+      "route": "/cart",
+      "memory": [
+        "A product bought in two sizes is two CartLines; the line's option (e.g. \"1 kg\") is shown only when the product has one",
+        "DecreaseButton is disabled at quantity 1; use RemoveButton to drop a line",
+        "Coupons are validated by POST /api/coupons; CouponStatus gets data-checked=\u003cthe code you typed\u003e once the answer is in, whether valid or not. SAVE10 is 10% off, WELCOME5 is $5 off, anything else is rejected",
+        "Cart Total excludes shipping; shipping is chosen at checkout"
+      ],
+      "components": [
+        {
+          "name": "Cart",
+          "selectors": [
+            "[data-component=\"Cart\"]"
+          ],
+          "source": "components/Cart.tsx",
+          "properties": [
+            {
+              "name": "count",
+              "extract": "attr=data-count"
+            }
+          ]
+        },
+        {
+          "name": "EmptyCart",
+          "selectors": [
+            "[data-component=\"Cart\"] [data-component=\"EmptyCart\"]"
+          ],
+          "parentChain": [
+            "Cart"
+          ]
+        },
+        {
+          "name": "CartLines",
+          "selectors": [
+            "[data-component=\"Cart\"] [data-component=\"CartLines\"]"
+          ],
+          "parentChain": [
+            "Cart"
+          ]
+        },
+        {
+          "name": "CartLine",
+          "selectors": [
+            "[data-component=\"Cart\"] [data-component=\"CartLine\"]"
+          ],
+          "properties": [
+            {
+              "name": "name",
+              "extract": "LineName.text"
+            },
+            {
+              "name": "option",
+              "extract": "LineOption.text"
+            },
+            {
+              "name": "quantity",
+              "extract": "attr=data-quantity"
+            },
+            {
+              "name": "line_total",
+              "extract": "LineTotal.text"
+            },
+            {
+              "name": "slug",
+              "extract": "attr=data-slug"
+            }
+          ],
+          "parentChain": [
+            "Cart"
+          ]
+        },
+        {
+          "name": "LineName",
+          "selectors": [
+            "[data-component=\"Cart\"] [data-component=\"CartLine\"] [data-component=\"LineName\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "Cart",
+            "CartLine"
+          ]
+        },
+        {
+          "name": "LineOption",
+          "selectors": [
+            "[data-component=\"Cart\"] [data-component=\"CartLine\"] [data-component=\"LineOption\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "Cart",
+            "CartLine"
+          ]
+        },
+        {
+          "name": "DecreaseButton",
+          "selectors": [
+            "[data-component=\"Cart\"] [data-component=\"CartLine\"] [data-component=\"DecreaseButton\"]"
+          ],
+          "parentChain": [
+            "Cart",
+            "CartLine"
+          ]
+        },
+        {
+          "name": "QuantityValue",
+          "selectors": [
+            "[data-component=\"Cart\"] [data-component=\"CartLine\"] [data-component=\"QuantityValue\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "Cart",
+            "CartLine"
+          ]
+        },
+        {
+          "name": "IncreaseButton",
+          "selectors": [
+            "[data-component=\"Cart\"] [data-component=\"CartLine\"] [data-component=\"IncreaseButton\"]"
+          ],
+          "parentChain": [
+            "Cart",
+            "CartLine"
+          ]
+        },
+        {
+          "name": "LineTotal",
+          "selectors": [
+            "[data-component=\"Cart\"] [data-component=\"CartLine\"] [data-component=\"LineTotal\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "Cart",
+            "CartLine"
+          ]
+        },
+        {
+          "name": "RemoveButton",
+          "selectors": [
+            "[data-component=\"Cart\"] [data-component=\"CartLine\"] [data-component=\"RemoveButton\"]"
+          ],
+          "parentChain": [
+            "Cart",
+            "CartLine"
+          ]
+        },
+        {
+          "name": "CouponForm",
+          "selectors": [
+            "[data-component=\"Cart\"] [data-component=\"CouponForm\"]"
+          ],
+          "parentChain": [
+            "Cart"
+          ]
+        },
+        {
+          "name": "CouponInput",
+          "selectors": [
+            "[data-component=\"Cart\"] [data-component=\"CouponForm\"] [data-component=\"CouponInput\"]"
+          ],
+          "parentChain": [
+            "Cart",
+            "CouponForm"
+          ]
+        },
+        {
+          "name": "ApplyCouponButton",
+          "selectors": [
+            "[data-component=\"Cart\"] [data-component=\"CouponForm\"] [data-component=\"ApplyCouponButton\"]"
+          ],
+          "parentChain": [
+            "Cart",
+            "CouponForm"
+          ]
+        },
+        {
+          "name": "CouponStatus",
+          "selectors": [
+            "[data-component=\"Cart\"] [data-component=\"CouponForm\"] [data-component=\"CouponStatus\"]"
+          ],
+          "properties": [
+            {
+              "name": "message",
+              "extract": "text"
+            },
+            {
+              "name": "state",
+              "extract": "attr=data-state"
+            },
+            {
+              "name": "checked",
+              "extract": "attr=data-checked"
+            }
+          ],
+          "parentChain": [
+            "Cart",
+            "CouponForm"
+          ]
+        },
+        {
+          "name": "CartTotals",
+          "selectors": [
+            "[data-component=\"Cart\"] [data-component=\"CartTotals\"]"
+          ],
+          "properties": [
+            {
+              "name": "subtotal",
+              "extract": "Subtotal.text"
+            },
+            {
+              "name": "discount",
+              "extract": "Discount.text"
+            },
+            {
+              "name": "total",
+              "extract": "Total.text"
+            }
+          ],
+          "parentChain": [
+            "Cart"
+          ]
+        },
+        {
+          "name": "Subtotal",
+          "selectors": [
+            "[data-component=\"Cart\"] [data-component=\"CartTotals\"] [data-component=\"Subtotal\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "Cart",
+            "CartTotals"
+          ]
+        },
+        {
+          "name": "Discount",
+          "selectors": [
+            "[data-component=\"Cart\"] [data-component=\"CartTotals\"] [data-component=\"Discount\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "Cart",
+            "CartTotals"
+          ]
+        },
+        {
+          "name": "Total",
+          "selectors": [
+            "[data-component=\"Cart\"] [data-component=\"CartTotals\"] [data-component=\"Total\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "Cart",
+            "CartTotals"
+          ]
+        },
+        {
+          "name": "CheckoutLink",
+          "selectors": [
+            "[data-component=\"Cart\"] [data-component=\"CheckoutLink\"]"
+          ],
+          "parentChain": [
+            "Cart"
+          ]
+        },
+        {
+          "name": "ContinueShoppingLink",
+          "selectors": [
+            "[data-component=\"Cart\"] [data-component=\"ContinueShoppingLink\"]"
+          ],
+          "parentChain": [
+            "Cart"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Checkout",
+      "route": "/checkout",
+      "memory": [
+        "With an empty cart the page renders CheckoutEmpty instead of the form; add something first",
+        "Validation runs on submit only. Errors appear as one FieldError per field (data-field is the input's name) plus a FormErrors summary; the page does not navigate",
+        "A valid submit navigates client-side to /orders/:id and empties the cart",
+        "Shipping is Standard ($5.00) or Express ($15.00); SummaryTotal includes it, the cart's Total did not"
+      ],
+      "components": [
+        {
+          "name": "CheckoutEmpty",
+          "selectors": [
+            "[data-component=\"CheckoutEmpty\"]"
+          ]
+        },
+        {
+          "name": "ContinueShoppingLink",
+          "selectors": [
+            "[data-component=\"CheckoutEmpty\"] [data-component=\"ContinueShoppingLink\"]"
+          ],
+          "parentChain": [
+            "CheckoutEmpty"
+          ]
+        },
+        {
+          "name": "CheckoutForm",
+          "selectors": [
+            "[data-component=\"CheckoutForm\"]"
+          ],
+          "source": "components/CheckoutForm.tsx",
+          "properties": [
+            {
+              "name": "submitted",
+              "extract": "attr=data-submitted"
+            },
+            {
+              "name": "errors",
+              "extract": "attr=data-errors"
+            }
+          ]
+        },
+        {
+          "name": "ShippingDetails",
+          "selectors": [
+            "[data-component=\"CheckoutForm\"] [data-component=\"ShippingDetails\"]"
+          ],
+          "parentChain": [
+            "CheckoutForm"
+          ]
+        },
+        {
+          "name": "FullNameInput",
+          "selectors": [
+            "[data-component=\"CheckoutForm\"] [data-component=\"ShippingDetails\"] [data-component=\"FullNameInput\"]"
+          ],
+          "parentChain": [
+            "CheckoutForm",
+            "ShippingDetails"
+          ]
+        },
+        {
+          "name": "EmailInput",
+          "selectors": [
+            "[data-component=\"CheckoutForm\"] [data-component=\"ShippingDetails\"] [data-component=\"EmailInput\"]"
+          ],
+          "parentChain": [
+            "CheckoutForm",
+            "ShippingDetails"
+          ]
+        },
+        {
+          "name": "AddressInput",
+          "selectors": [
+            "[data-component=\"CheckoutForm\"] [data-component=\"ShippingDetails\"] [data-component=\"AddressInput\"]"
+          ],
+          "parentChain": [
+            "CheckoutForm",
+            "ShippingDetails"
+          ]
+        },
+        {
+          "name": "CityInput",
+          "selectors": [
+            "[data-component=\"CheckoutForm\"] [data-component=\"ShippingDetails\"] [data-component=\"CityInput\"]"
+          ],
+          "parentChain": [
+            "CheckoutForm",
+            "ShippingDetails"
+          ]
+        },
+        {
+          "name": "PostalCodeInput",
+          "selectors": [
+            "[data-component=\"CheckoutForm\"] [data-component=\"ShippingDetails\"] [data-component=\"PostalCodeInput\"]"
+          ],
+          "parentChain": [
+            "CheckoutForm",
+            "ShippingDetails"
+          ]
+        },
+        {
+          "name": "FieldError",
+          "selectors": [
+            "[data-component=\"CheckoutForm\"] [data-component=\"ShippingDetails\"] [data-component=\"FieldError\"]"
+          ],
+          "properties": [
+            {
+              "name": "field",
+              "extract": "attr=data-field"
+            },
+            {
+              "name": "message",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "CheckoutForm",
+            "ShippingDetails"
+          ]
+        },
+        {
+          "name": "ShippingMethod",
+          "selectors": [
+            "[data-component=\"CheckoutForm\"] [data-component=\"ShippingMethod\"]"
+          ],
+          "parentChain": [
+            "CheckoutForm"
+          ]
+        },
+        {
+          "name": "ShippingOption",
+          "selectors": [
+            "[data-component=\"CheckoutForm\"] [data-component=\"ShippingMethod\"] [data-component=\"ShippingOption\"]"
+          ],
+          "properties": [
+            {
+              "name": "method",
+              "extract": "attr=data-method"
+            },
+            {
+              "name": "selected",
+              "extract": "attr=data-selected"
+            },
+            {
+              "name": "label",
+              "extract": "ShippingLabel.text"
+            }
+          ],
+          "parentChain": [
+            "CheckoutForm",
+            "ShippingMethod"
+          ]
+        },
+        {
+          "name": "ShippingRadio",
+          "selectors": [
+            "[data-component=\"CheckoutForm\"] [data-component=\"ShippingMethod\"] [data-component=\"ShippingOption\"] [data-component=\"ShippingRadio\"]"
+          ],
+          "parentChain": [
+            "CheckoutForm",
+            "ShippingMethod",
+            "ShippingOption"
+          ]
+        },
+        {
+          "name": "ShippingLabel",
+          "selectors": [
+            "[data-component=\"CheckoutForm\"] [data-component=\"ShippingMethod\"] [data-component=\"ShippingOption\"] [data-component=\"ShippingLabel\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "CheckoutForm",
+            "ShippingMethod",
+            "ShippingOption"
+          ]
+        },
+        {
+          "name": "OrderSummary",
+          "selectors": [
+            "[data-component=\"CheckoutForm\"] [data-component=\"OrderSummary\"]"
+          ],
+          "properties": [
+            {
+              "name": "subtotal",
+              "extract": "SummarySubtotal.text"
+            },
+            {
+              "name": "discount",
+              "extract": "SummaryDiscount.text"
+            },
+            {
+              "name": "shipping",
+              "extract": "SummaryShipping.text"
+            },
+            {
+              "name": "total",
+              "extract": "SummaryTotal.text"
+            }
+          ],
+          "parentChain": [
+            "CheckoutForm"
+          ]
+        },
+        {
+          "name": "SummaryLine",
+          "selectors": [
+            "[data-component=\"CheckoutForm\"] [data-component=\"OrderSummary\"] [data-component=\"SummaryLine\"]"
+          ],
+          "properties": [
+            {
+              "name": "name",
+              "extract": "SummaryName.text"
+            },
+            {
+              "name": "quantity",
+              "extract": "SummaryQuantity.text"
+            },
+            {
+              "name": "total",
+              "extract": "SummaryLineTotal.text"
+            }
+          ],
+          "parentChain": [
+            "CheckoutForm",
+            "OrderSummary"
+          ]
+        },
+        {
+          "name": "SummaryName",
+          "selectors": [
+            "[data-component=\"CheckoutForm\"] [data-component=\"OrderSummary\"] [data-component=\"SummaryLine\"] [data-component=\"SummaryName\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "CheckoutForm",
+            "OrderSummary",
+            "SummaryLine"
+          ]
+        },
+        {
+          "name": "SummaryQuantity",
+          "selectors": [
+            "[data-component=\"CheckoutForm\"] [data-component=\"OrderSummary\"] [data-component=\"SummaryLine\"] [data-component=\"SummaryQuantity\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "CheckoutForm",
+            "OrderSummary",
+            "SummaryLine"
+          ]
+        },
+        {
+          "name": "SummaryLineTotal",
+          "selectors": [
+            "[data-component=\"CheckoutForm\"] [data-component=\"OrderSummary\"] [data-component=\"SummaryLine\"] [data-component=\"SummaryLineTotal\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "CheckoutForm",
+            "OrderSummary",
+            "SummaryLine"
+          ]
+        },
+        {
+          "name": "SummarySubtotal",
+          "selectors": [
+            "[data-component=\"CheckoutForm\"] [data-component=\"OrderSummary\"] [data-component=\"SummarySubtotal\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "CheckoutForm",
+            "OrderSummary"
+          ]
+        },
+        {
+          "name": "SummaryDiscount",
+          "selectors": [
+            "[data-component=\"CheckoutForm\"] [data-component=\"OrderSummary\"] [data-component=\"SummaryDiscount\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "CheckoutForm",
+            "OrderSummary"
+          ]
+        },
+        {
+          "name": "SummaryShipping",
+          "selectors": [
+            "[data-component=\"CheckoutForm\"] [data-component=\"OrderSummary\"] [data-component=\"SummaryShipping\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "CheckoutForm",
+            "OrderSummary"
+          ]
+        },
+        {
+          "name": "SummaryTotal",
+          "selectors": [
+            "[data-component=\"CheckoutForm\"] [data-component=\"OrderSummary\"] [data-component=\"SummaryTotal\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "CheckoutForm",
+            "OrderSummary"
+          ]
+        },
+        {
+          "name": "FormErrors",
+          "selectors": [
+            "[data-component=\"CheckoutForm\"] [data-component=\"FormErrors\"]"
+          ],
+          "properties": [
+            {
+              "name": "message",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "CheckoutForm"
+          ]
+        },
+        {
+          "name": "PlaceOrderButton",
+          "selectors": [
+            "[data-component=\"CheckoutForm\"] [data-component=\"PlaceOrderButton\"]"
+          ],
+          "parentChain": [
+            "CheckoutForm"
+          ]
+        },
+        {
+          "name": "BackToCartLink",
+          "selectors": [
+            "[data-component=\"CheckoutForm\"] [data-component=\"BackToCartLink\"]"
+          ],
+          "parentChain": [
+            "CheckoutForm"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Catalog",
+      "route": "/",
+      "memory": [
+        "Nine products; Sumatra Mandheling is sold out, so its QuickAddButton is disabled and quick_add_to_cart on it times out rather than adding",
+        "Search matches name and description, case-insensitively; \"coffee\" finds nothing because no product is named that way — filter by category instead",
+        "Sort labels are exactly \"Featured\", \"Price: low to high\", \"Price: high to low\", \"Name\"",
+        "Quick add always adds one unit of the product's first option; use the product page to pick a size or quantity"
+      ],
+      "components": [
+        {
+          "name": "Catalog",
+          "selectors": [
+            "[data-component=\"Catalog\"]"
+          ],
+          "source": "components/Catalog.tsx",
+          "properties": [
+            {
+              "name": "count",
+              "extract": "attr=data-count"
+            },
+            {
+              "name": "query",
+              "extract": "attr=data-query"
+            }
+          ]
+        },
+        {
+          "name": "SearchInput",
+          "selectors": [
+            "[data-component=\"Catalog\"] [data-component=\"SearchInput\"]"
+          ],
+          "parentChain": [
+            "Catalog"
+          ]
+        },
+        {
+          "name": "CategoryFilter",
+          "selectors": [
+            "[data-component=\"Catalog\"] [data-component=\"CategoryFilter\"]"
+          ],
+          "parentChain": [
+            "Catalog"
+          ]
+        },
+        {
+          "name": "CategoryButton",
+          "selectors": [
+            "[data-component=\"Catalog\"] [data-component=\"CategoryFilter\"] [data-component=\"CategoryButton\"]"
+          ],
+          "properties": [
+            {
+              "name": "label",
+              "extract": "text"
+            },
+            {
+              "name": "active",
+              "extract": "attr=aria-pressed"
+            }
+          ],
+          "parentChain": [
+            "Catalog",
+            "CategoryFilter"
+          ]
+        },
+        {
+          "name": "SortBar",
+          "selectors": [
+            "[data-component=\"Catalog\"] [data-component=\"SortBar\"]"
+          ],
+          "parentChain": [
+            "Catalog"
+          ]
+        },
+        {
+          "name": "SortButton",
+          "selectors": [
+            "[data-component=\"Catalog\"] [data-component=\"SortBar\"] [data-component=\"SortButton\"]"
+          ],
+          "properties": [
+            {
+              "name": "label",
+              "extract": "text"
+            },
+            {
+              "name": "active",
+              "extract": "attr=aria-pressed"
+            }
+          ],
+          "parentChain": [
+            "Catalog",
+            "SortBar"
+          ]
+        },
+        {
+          "name": "ResultCount",
+          "selectors": [
+            "[data-component=\"Catalog\"] [data-component=\"ResultCount\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "Catalog"
+          ]
+        },
+        {
+          "name": "ProductGrid",
+          "selectors": [
+            "[data-component=\"Catalog\"] [data-component=\"ProductGrid\"]"
+          ],
+          "parentChain": [
+            "Catalog"
+          ]
+        },
+        {
+          "name": "ProductCard",
+          "selectors": [
+            "[data-component=\"Catalog\"] [data-component=\"ProductCard\"]"
+          ],
+          "properties": [
+            {
+              "name": "name",
+              "extract": "ProductLink.text"
+            },
+            {
+              "name": "price",
+              "extract": "ProductPrice.text"
+            },
+            {
+              "name": "stock",
+              "extract": "StockBadge.text"
+            },
+            {
+              "name": "category",
+              "extract": "attr=data-category"
+            },
+            {
+              "name": "slug",
+              "extract": "attr=data-slug"
+            },
+            {
+              "name": "in_cart",
+              "extract": "attr=data-in-cart"
+            }
+          ],
+          "parentChain": [
+            "Catalog"
+          ]
+        },
+        {
+          "name": "ProductLink",
+          "selectors": [
+            "[data-component=\"Catalog\"] [data-component=\"ProductCard\"] [data-component=\"ProductLink\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "Catalog",
+            "ProductCard"
+          ]
+        },
+        {
+          "name": "ProductPrice",
+          "selectors": [
+            "[data-component=\"Catalog\"] [data-component=\"ProductCard\"] [data-component=\"ProductPrice\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "Catalog",
+            "ProductCard"
+          ]
+        },
+        {
+          "name": "StockBadge",
+          "selectors": [
+            "[data-component=\"Catalog\"] [data-component=\"ProductCard\"] [data-component=\"StockBadge\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "Catalog",
+            "ProductCard"
+          ]
+        },
+        {
+          "name": "QuickAddButton",
+          "selectors": [
+            "[data-component=\"Catalog\"] [data-component=\"ProductCard\"] [data-component=\"QuickAddButton\"]"
+          ],
+          "properties": [
+            {
+              "name": "label",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "Catalog",
+            "ProductCard"
+          ]
+        },
+        {
+          "name": "EmptyResults",
+          "selectors": [
+            "[data-component=\"Catalog\"] [data-component=\"EmptyResults\"]"
+          ],
+          "parentChain": [
+            "Catalog"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "route": "/orders",
+      "memory": [
+        "Orders live in the tab; a full load of /orders always shows NoOrders",
+        "Order numbers are ORD-1001, ORD-1002, … in the order they were placed within the tab"
+      ],
+      "components": [
+        {
+          "name": "OrderHistory",
+          "selectors": [
+            "[data-component=\"OrderHistory\"]"
+          ],
+          "source": "components/OrderHistory.tsx",
+          "properties": [
+            {
+              "name": "count",
+              "extract": "attr=data-count"
+            }
+          ]
+        },
+        {
+          "name": "NoOrders",
+          "selectors": [
+            "[data-component=\"OrderHistory\"] [data-component=\"NoOrders\"]"
+          ],
+          "parentChain": [
+            "OrderHistory"
+          ]
+        },
+        {
+          "name": "ContinueShoppingLink",
+          "selectors": [
+            "[data-component=\"OrderHistory\"] [data-component=\"NoOrders\"] [data-component=\"ContinueShoppingLink\"]"
+          ],
+          "parentChain": [
+            "OrderHistory",
+            "NoOrders"
+          ]
+        },
+        {
+          "name": "OrderList",
+          "selectors": [
+            "[data-component=\"OrderHistory\"] [data-component=\"OrderList\"]"
+          ],
+          "parentChain": [
+            "OrderHistory"
+          ]
+        },
+        {
+          "name": "OrderRow",
+          "selectors": [
+            "[data-component=\"OrderHistory\"] [data-component=\"OrderRow\"]"
+          ],
+          "properties": [
+            {
+              "name": "number",
+              "extract": "OrderLink.text"
+            },
+            {
+              "name": "items",
+              "extract": "attr=data-items"
+            },
+            {
+              "name": "total",
+              "extract": "OrderRowTotal.text"
+            }
+          ],
+          "parentChain": [
+            "OrderHistory"
+          ]
+        },
+        {
+          "name": "OrderLink",
+          "selectors": [
+            "[data-component=\"OrderHistory\"] [data-component=\"OrderRow\"] [data-component=\"OrderLink\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "OrderHistory",
+            "OrderRow"
+          ]
+        },
+        {
+          "name": "OrderRowItems",
+          "selectors": [
+            "[data-component=\"OrderHistory\"] [data-component=\"OrderRow\"] [data-component=\"OrderRowItems\"]"
+          ],
+          "parentChain": [
+            "OrderHistory",
+            "OrderRow"
+          ]
+        },
+        {
+          "name": "OrderRowTotal",
+          "selectors": [
+            "[data-component=\"OrderHistory\"] [data-component=\"OrderRow\"] [data-component=\"OrderRowTotal\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "OrderHistory",
+            "OrderRow"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OrderConfirmation",
+      "route": "/orders/:id",
+      "memory": [
+        "No representative url; the order only exists in the tab that placed it, so a direct load renders OrderMissing"
+      ],
+      "components": [
+        {
+          "name": "OrderMissing",
+          "selectors": [
+            "[data-component=\"OrderMissing\"]"
+          ]
+        },
+        {
+          "name": "ViewOrdersLink",
+          "selectors": [
+            "[data-component=\"OrderMissing\"] [data-component=\"ViewOrdersLink\"]"
+          ],
+          "parentChain": [
+            "OrderMissing"
+          ]
+        },
+        {
+          "name": "OrderConfirmation",
+          "selectors": [
+            "[data-component=\"OrderConfirmation\"]"
+          ],
+          "source": "components/OrderConfirmation.tsx",
+          "properties": [
+            {
+              "name": "number",
+              "extract": "OrderNumber.text"
+            },
+            {
+              "name": "status",
+              "extract": "OrderStatus.text"
+            },
+            {
+              "name": "total",
+              "extract": "OrderTotal.text"
+            },
+            {
+              "name": "shipping",
+              "extract": "OrderShipping.text"
+            },
+            {
+              "name": "id",
+              "extract": "attr=data-id"
+            }
+          ]
+        },
+        {
+          "name": "OrderNumber",
+          "selectors": [
+            "[data-component=\"OrderConfirmation\"] [data-component=\"OrderNumber\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "OrderConfirmation"
+          ]
+        },
+        {
+          "name": "OrderStatus",
+          "selectors": [
+            "[data-component=\"OrderConfirmation\"] [data-component=\"OrderStatus\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "OrderConfirmation"
+          ]
+        },
+        {
+          "name": "OrderItems",
+          "selectors": [
+            "[data-component=\"OrderConfirmation\"] [data-component=\"OrderItems\"]"
+          ],
+          "parentChain": [
+            "OrderConfirmation"
+          ]
+        },
+        {
+          "name": "OrderItem",
+          "selectors": [
+            "[data-component=\"OrderConfirmation\"] [data-component=\"OrderItem\"]"
+          ],
+          "properties": [
+            {
+              "name": "name",
+              "extract": "ItemName.text"
+            },
+            {
+              "name": "quantity",
+              "extract": "ItemQuantity.text"
+            },
+            {
+              "name": "total",
+              "extract": "ItemTotal.text"
+            }
+          ],
+          "parentChain": [
+            "OrderConfirmation"
+          ]
+        },
+        {
+          "name": "ItemName",
+          "selectors": [
+            "[data-component=\"OrderConfirmation\"] [data-component=\"OrderItem\"] [data-component=\"ItemName\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "OrderConfirmation",
+            "OrderItem"
+          ]
+        },
+        {
+          "name": "ItemQuantity",
+          "selectors": [
+            "[data-component=\"OrderConfirmation\"] [data-component=\"OrderItem\"] [data-component=\"ItemQuantity\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "OrderConfirmation",
+            "OrderItem"
+          ]
+        },
+        {
+          "name": "ItemTotal",
+          "selectors": [
+            "[data-component=\"OrderConfirmation\"] [data-component=\"OrderItem\"] [data-component=\"ItemTotal\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "OrderConfirmation",
+            "OrderItem"
+          ]
+        },
+        {
+          "name": "OrderShipping",
+          "selectors": [
+            "[data-component=\"OrderConfirmation\"] [data-component=\"OrderShipping\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "OrderConfirmation"
+          ]
+        },
+        {
+          "name": "OrderTotal",
+          "selectors": [
+            "[data-component=\"OrderConfirmation\"] [data-component=\"OrderTotal\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "OrderConfirmation"
+          ]
+        },
+        {
+          "name": "ViewOrdersLink",
+          "selectors": [
+            "[data-component=\"OrderConfirmation\"] [data-component=\"ViewOrdersLink\"]"
+          ],
+          "parentChain": [
+            "OrderConfirmation"
+          ]
+        },
+        {
+          "name": "ContinueShoppingLink",
+          "selectors": [
+            "[data-component=\"OrderConfirmation\"] [data-component=\"ContinueShoppingLink\"]"
+          ],
+          "parentChain": [
+            "OrderConfirmation"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Product",
+      "route": "/products/:slug",
+      "memory": [
+        "The page is a server component; ProductDetail is the client island that owns option, quantity, and the cart",
+        "ProductPrice reflects the selected option (1 kg bags cost more than 250 g)",
+        "AddToCartButton reads \"Added to cart\" and sets data-added=true after a click; changing the option or quantity resets it. Each click adds again — it is not idempotent",
+        "QuantityInput is a controlled number input; the runtime fills it through the native value setter, and data-quantity on QuantityControl is the parsed value"
+      ],
+      "components": [
+        {
+          "name": "ProductDetail",
+          "selectors": [
+            "[data-component=\"ProductDetail\"]"
+          ],
+          "source": "components/ProductDetail.tsx",
+          "properties": [
+            {
+              "name": "title",
+              "extract": "ProductTitle.text"
+            },
+            {
+              "name": "category",
+              "extract": "ProductCategory.text"
+            },
+            {
+              "name": "price",
+              "extract": "ProductPrice.text"
+            },
+            {
+              "name": "stock",
+              "extract": "StockBadge.text"
+            },
+            {
+              "name": "slug",
+              "extract": "attr=data-slug"
+            }
+          ]
+        },
+        {
+          "name": "BackToShopLink",
+          "selectors": [
+            "[data-component=\"ProductDetail\"] [data-component=\"BackToShopLink\"]"
+          ],
+          "parentChain": [
+            "ProductDetail"
+          ]
+        },
+        {
+          "name": "ProductTitle",
+          "selectors": [
+            "[data-component=\"ProductDetail\"] [data-component=\"ProductTitle\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "ProductDetail"
+          ]
+        },
+        {
+          "name": "ProductCategory",
+          "selectors": [
+            "[data-component=\"ProductDetail\"] [data-component=\"ProductCategory\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "ProductDetail"
+          ]
+        },
+        {
+          "name": "StockBadge",
+          "selectors": [
+            "[data-component=\"ProductDetail\"] [data-component=\"StockBadge\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "ProductDetail"
+          ]
+        },
+        {
+          "name": "ProductPrice",
+          "selectors": [
+            "[data-component=\"ProductDetail\"] [data-component=\"ProductPrice\"]"
+          ],
+          "properties": [
+            {
+              "name": "text",
+              "extract": "text"
+            }
+          ],
+          "parentChain": [
+            "ProductDetail"
+          ]
+        },
+        {
+          "name": "ProductDescription",
+          "selectors": [
+            "[data-component=\"ProductDetail\"] [data-component=\"ProductDescription\"]"
+          ],
+          "parentChain": [
+            "ProductDetail"
+          ]
+        },
+        {
+          "name": "OptionGroup",
+          "selectors": [
+            "[data-component=\"ProductDetail\"] [data-component=\"OptionGroup\"]"
+          ],
+          "properties": [
+            {
+              "name": "name",
+              "extract": "attr=data-name"
+            }
+          ],
+          "parentChain": [
+            "ProductDetail"
+          ]
+        },
+        {
+          "name": "OptionButton",
+          "selectors": [
+            "[data-component=\"ProductDetail\"] [data-component=\"OptionGroup\"] [data-component=\"OptionButton\"]"
+          ],
+          "properties": [
+            {
+              "name": "label",
+              "extract": "text"
+            },
+            {
+              "name": "selected",
+              "extract": "attr=aria-pressed"
+            }
+          ],
+          "parentChain": [
+            "ProductDetail",
+            "OptionGroup"
+          ]
+        },
+        {
+          "name": "QuantityControl",
+          "selectors": [
+            "[data-component=\"ProductDetail\"] [data-component=\"QuantityControl\"]"
+          ],
+          "properties": [
+            {
+              "name": "quantity",
+              "extract": "attr=data-quantity"
+            }
+          ],
+          "parentChain": [
+            "ProductDetail"
+          ]
+        },
+        {
+          "name": "DecrementButton",
+          "selectors": [
+            "[data-component=\"ProductDetail\"] [data-component=\"QuantityControl\"] [data-component=\"DecrementButton\"]"
+          ],
+          "parentChain": [
+            "ProductDetail",
+            "QuantityControl"
+          ]
+        },
+        {
+          "name": "QuantityInput",
+          "selectors": [
+            "[data-component=\"ProductDetail\"] [data-component=\"QuantityControl\"] [data-component=\"QuantityInput\"]"
+          ],
+          "parentChain": [
+            "ProductDetail",
+            "QuantityControl"
+          ]
+        },
+        {
+          "name": "IncrementButton",
+          "selectors": [
+            "[data-component=\"ProductDetail\"] [data-component=\"QuantityControl\"] [data-component=\"IncrementButton\"]"
+          ],
+          "parentChain": [
+            "ProductDetail",
+            "QuantityControl"
+          ]
+        },
+        {
+          "name": "AddToCartButton",
+          "selectors": [
+            "[data-component=\"ProductDetail\"] [data-component=\"AddToCartButton\"]"
+          ],
+          "properties": [
+            {
+              "name": "label",
+              "extract": "text"
+            },
+            {
+              "name": "added",
+              "extract": "attr=data-added"
+            }
+          ],
+          "parentChain": [
+            "ProductDetail"
+          ]
+        },
+        {
+          "name": "CartSummary",
+          "selectors": [
+            "[data-component=\"ProductDetail\"] [data-component=\"CartSummary\"]"
+          ],
+          "properties": [
+            {
+              "name": "count",
+              "extract": "attr=data-count"
+            }
+          ],
+          "parentChain": [
+            "ProductDetail"
+          ]
+        },
+        {
+          "name": "ViewCartLink",
+          "selectors": [
+            "[data-component=\"ProductDetail\"] [data-component=\"CartSummary\"] [data-component=\"ViewCartLink\"]"
+          ],
+          "parentChain": [
+            "ProductDetail",
+            "CartSummary"
+          ]
+        },
+        {
+          "name": "ProductMissing",
+          "selectors": [
+            "[data-component=\"ProductMissing\"]"
+          ]
+        },
+        {
+          "name": "BackToShopLink",
+          "selectors": [
+            "[data-component=\"ProductMissing\"] [data-component=\"BackToShopLink\"]"
+          ],
+          "parentChain": [
+            "ProductMissing"
+          ]
+        }
+      ]
+    }
+  ],
+  "requests": [
+    {
+      "name": "CouponsApi",
+      "route": "/api/coupons",
+      "method": "POST",
+      "description": "Validate a coupon code. Always 200 — the outcome is in the body.",
+      "source": "app/api/coupons/route.ts",
+      "request": {
+        "fields": [
+          {
+            "name": "code",
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "fields": [
+          {
+            "name": "valid",
+            "type": "boolean"
+          },
+          {
+            "name": "message",
+            "type": "string"
+          },
+          {
+            "name": "coupon",
+            "type": "object",
+            "description": "Present when valid — code, kind (percent | fixed), amount"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "outcome",
+          "source": "rsp.body",
+          "field": "valid"
+        }
+      ]
+    },
+    {
+      "name": "ProductsApi",
+      "route": "/api/products",
+      "method": "GET",
+      "description": "The catalog as JSON. Same q / category / sort query parameters as the page's controls.",
+      "source": "app/api/products/route.ts",
+      "response": {
+        "fields": [
+          {
+            "name": "count",
+            "type": "number"
+          },
+          {
+            "name": "products",
+            "type": "array",
+            "description": "slug, name, category, price (cents), inStock"
+          }
+        ]
+      }
+    }
+  ]
+}

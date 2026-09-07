@@ -1,0 +1,138 @@
+version: 1
+
+views:
+  - name: Orders
+    route: /orders
+    url: http://localhost:3000/orders
+    source: app/(checkout)/orders/page.tsx
+    dependencies:
+      - app/layout.tsx
+      - app/(checkout)/layout.tsx
+      - components/OrderHistory.tsx
+      - lib/store.ts
+    description: Order history for this tab — one row per placed order.
+    memory:
+      - Orders live in the tab; a full load of /orders always shows NoOrders
+      - Order numbers are ORD-1001, ORD-1002, … in the order they were placed within the tab
+    components:
+      - name: OrderHistory
+        selector: '[data-component="OrderHistory"]'
+        source: components/OrderHistory.tsx
+        properties:
+          - name: count
+            extract: attr=data-count
+        children:
+          - name: NoOrders
+            selector: '[data-component="NoOrders"]'
+            children:
+              - name: ContinueShoppingLink
+                selector: '[data-component="ContinueShoppingLink"]'
+          - name: OrderList
+            selector: '[data-component="OrderList"]'
+          - name: OrderRow
+            selector: '[data-component="OrderRow"]'
+            properties:
+              - name: number
+                extract: OrderLink.text
+              - name: items
+                extract: attr=data-items
+              - name: total
+                extract: OrderRowTotal.text
+            children:
+              - name: OrderLink
+                selector: '[data-component="OrderLink"]'
+                description: Client-side navigation to /orders/:id
+                properties:
+                  - name: text
+                    extract: text
+              - name: OrderRowItems
+                selector: '[data-component="OrderRowItems"]'
+              - name: OrderRowTotal
+                selector: '[data-component="OrderRowTotal"]'
+                properties:
+                  - name: text
+                    extract: text
+
+  - name: OrderConfirmation
+    route: /orders/:id
+    source: app/(checkout)/orders/[id]/page.tsx
+    dependencies:
+      - app/layout.tsx
+      - app/(checkout)/layout.tsx
+      - components/OrderConfirmation.tsx
+      - lib/store.ts
+    description: One order — number, status, items, shipping, total. Reached after place_order or from the history.
+    memory:
+      - No representative url; the order only exists in the tab that placed it, so a direct load renders OrderMissing
+    components:
+      - name: OrderMissing
+        selector: '[data-component="OrderMissing"]'
+        children:
+          - name: ViewOrdersLink
+            selector: '[data-component="ViewOrdersLink"]'
+      - name: OrderConfirmation
+        selector: '[data-component="OrderConfirmation"]'
+        source: components/OrderConfirmation.tsx
+        properties:
+          - name: number
+            extract: OrderNumber.text
+          - name: status
+            extract: OrderStatus.text
+          - name: total
+            extract: OrderTotal.text
+          - name: shipping
+            extract: OrderShipping.text
+          - name: id
+            extract: attr=data-id
+        children:
+          - name: OrderNumber
+            selector: '[data-component="OrderNumber"]'
+            properties:
+              - name: text
+                extract: text
+          - name: OrderStatus
+            selector: '[data-component="OrderStatus"]'
+            properties:
+              - name: text
+                extract: text
+          - name: OrderItems
+            selector: '[data-component="OrderItems"]'
+          - name: OrderItem
+            selector: '[data-component="OrderItem"]'
+            properties:
+              - name: name
+                extract: ItemName.text
+              - name: quantity
+                extract: ItemQuantity.text
+              - name: total
+                extract: ItemTotal.text
+            children:
+              - name: ItemName
+                selector: '[data-component="ItemName"]'
+                properties:
+                  - name: text
+                    extract: text
+              - name: ItemQuantity
+                selector: '[data-component="ItemQuantity"]'
+                properties:
+                  - name: text
+                    extract: text
+              - name: ItemTotal
+                selector: '[data-component="ItemTotal"]'
+                properties:
+                  - name: text
+                    extract: text
+          - name: OrderShipping
+            selector: '[data-component="OrderShipping"]'
+            properties:
+              - name: text
+                extract: text
+          - name: OrderTotal
+            selector: '[data-component="OrderTotal"]'
+            properties:
+              - name: text
+                extract: text
+          - name: ViewOrdersLink
+            selector: '[data-component="ViewOrdersLink"]'
+          - name: ContinueShoppingLink
+            selector: '[data-component="ContinueShoppingLink"]'

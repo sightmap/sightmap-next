@@ -1,0 +1,39 @@
+version: 1
+
+# Content reachable from every route (the spec's shared.yaml convention).
+memory:
+  - Cart, coupon, and order state is in-memory per tab; a full page load starts from an empty cart and no orders, so every fresh open is the same starting point
+  - All navigation is client-side (next/link, router.push); state survives it
+
+components:
+  - name: SiteNav
+    selector: '[data-component="SiteNav"]'
+    source: components/SiteNav.tsx
+    children:
+      - name: NavLink
+        selector: '[data-component="NavLink"]'
+        properties:
+          - name: label
+            extract: text
+      - name: CartLink
+        selector: '[data-component="CartLink"]'
+        description: Goes to /cart; data-count mirrors the number of units in the cart
+        properties:
+          - name: count
+            extract: attr=data-count
+        children:
+          - name: CartCount
+            selector: '[data-component="CartCount"]'
+            properties:
+              - name: text
+                extract: text
+  - name: CheckoutShell
+    selector: '[data-component="CheckoutShell"]'
+    source: app/(checkout)/layout.tsx
+    description: Route-group layout wrapping /checkout and /orders*; absent on the shop routes, which is expected
+    children:
+      - name: SecureBanner
+        selector: '[data-component="SecureBanner"]'
+  - name: RouteAnnouncer
+    selector: '#__next-route-announcer__'
+    description: Next.js client-navigation announcer for screen readers; empty until a navigation, never a target
