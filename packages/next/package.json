@@ -24,6 +24,9 @@
     "./run-plan": "./src/run-plan.mjs"
   },
   "files": ["bin/", "src/", "README.md"],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "test": "node --test \"test/*.test.mjs\""
   },

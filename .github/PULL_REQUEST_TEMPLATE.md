@@ -6,3 +6,4 @@
 
 - [ ] Commits are signed off (`git commit -s`)
 - [ ] `npm test` passes; `npm run test:plans` passes if the example or the runner changed
+- [ ] A changeset is included if `packages/next` changed in a user-facing way (`npm run changeset`)
